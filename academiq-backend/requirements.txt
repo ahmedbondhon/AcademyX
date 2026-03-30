@@ -1,0 +1,43 @@
+# ── Web Framework ──────────────────────────────
+fastapi==0.111.0
+uvicorn[standard]==0.29.0
+
+# ── Database ───────────────────────────────────
+sqlalchemy==2.0.30
+alembic==1.13.1
+psycopg2-binary==2.9.9        # PostgreSQL driver
+# sqlite3 is built into Python — no install needed for dev
+
+# ── Auth & Security ────────────────────────────
+python-jose[cryptography]==3.3.0
+passlib[bcrypt]==1.7.4
+
+# ── Request Validation ─────────────────────────
+pydantic==2.7.1
+pydantic-settings==2.2.1
+python-multipart==0.0.9       # File upload support
+
+# ── ML & Data Science ──────────────────────────
+xgboost==2.0.3
+scikit-learn==1.4.2
+pandas==2.2.2
+numpy==1.26.4
+
+# ── NLP (CO Tagger) ────────────────────────────
+sentence-transformers==2.7.0
+torch==2.3.0                  # Required by sentence-transformers
+
+# ── Async Task Queue ───────────────────────────
+celery==5.4.0
+redis==5.0.4
+
+# ── PDF Report Generation ──────────────────────
+reportlab==4.2.0
+
+# ── Email ──────────────────────────────────────
+# smtplib is built into Python — no install needed
+
+# ── Dev & Testing ──────────────────────────────
+pytest==8.2.2
+httpx==0.27.0                 # For FastAPI test client
+python-dotenv==1.0.1

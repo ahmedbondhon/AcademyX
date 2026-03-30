@@ -1,0 +1,73 @@
+# ── Python ─────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg
+*.egg-info/
+dist/
+build/
+eggs/
+parts/
+var/
+sdist/
+wheels/
+pip-wheel-metadata/
+
+# ── Virtual Environment ────────────────────────
+venv/
+env/
+.venv/
+.env/
+ENV/
+
+# ── Environment Variables ──────────────────────
+.env
+.env.local
+.env.production
+
+# ── Database ───────────────────────────────────
+*.db
+*.sqlite
+*.sqlite3
+
+# ── ML Models (large binary files) ────────────
+ml/models/*.pkl
+ml/models/*.joblib
+ml/models/*.h5
+# To share models with team: use Git LFS or store in cloud storage
+
+# ── Jupyter Notebooks checkpoints ─────────────
+.ipynb_checkpoints/
+ml/notebooks/.ipynb_checkpoints/
+
+# ── Alembic ────────────────────────────────────
+# Keep versions/ tracked, ignore temp files
+alembic/versions/__pycache__/
+
+# ── Testing ────────────────────────────────────
+.pytest_cache/
+.coverage
+htmlcov/
+coverage.xml
+
+# ── IDE ────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# ── Logs ───────────────────────────────────────
+*.log
+logs/
+
+# ── OS ─────────────────────────────────────────
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
