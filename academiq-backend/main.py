@@ -5,6 +5,10 @@ from database.connection import Base, engine
 
 # ── ADD THIS ──
 from api.routes_auth import router as auth_router
+from api.routes_obe import router as obe_router
+from api.routes_alerts import router as alerts_router
+from api.routes_upload  import router as upload_router  
+from api.routes_reports import router as reports_router
 
 Base.metadata.create_all(bind=engine)
 
@@ -20,7 +24,10 @@ app.add_middleware(
 
 # ── ADD THIS ──
 app.include_router(auth_router, prefix="/api/auth", tags=["Auth"])
-
+app.include_router(obe_router,  prefix="/api/obe",  tags=["OBE"])
+app.include_router(alerts_router, prefix="/api/alerts", tags=["Alerts"])
+app.include_router(upload_router,  prefix="/api/upload",  tags=["Upload"])
+app.include_router(reports_router, prefix="/api/reports", tags=["Reports"])
 @app.get("/")
 def root():
     return {"message": f"{settings.APP_NAME} API is running"}
