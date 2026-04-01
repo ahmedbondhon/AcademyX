@@ -1,0 +1,503 @@
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font-sans)}
+.app{display:flex;height:100vh;min-height:700px;background:#f8fafc;font-size:14px}
+.sidebar{width:220px;background:#1e40af;display:flex;flex-direction:column;flex-shrink:0}
+.sidebar-logo{padding:20px 16px 14px;border-bottom:1px solid #1d4ed8}
+.sidebar-logo h1{color:#fff;font-size:16px;font-weight:500}
+.sidebar-logo p{color:#93c5fd;font-size:11px;margin-top:2px}
+.sidebar-user{padding:12px 16px;border-bottom:1px solid #1d4ed8;display:flex;align-items:center;gap:10px}
+.avatar{width:32px;height:32px;border-radius:50%;background:#1d4ed8;display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:500;flex-shrink:0}
+.user-name{color:#fff;font-size:13px;font-weight:500}
+.user-role{color:#93c5fd;font-size:11px;text-transform:capitalize}
+.nav{flex:1;padding:12px 8px}
+.nav-item{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:8px;cursor:pointer;color:#bfdbfe;font-size:13px;margin-bottom:2px;transition:background .15s}
+.nav-item:hover{background:#1d4ed8}
+.nav-item.active{background:#fff;color:#1e40af;font-weight:500}
+.nav-icon{font-size:14px;width:18px;text-align:center}
+.sidebar-footer{padding:12px 8px;border-top:1px solid #1d4ed8}
+.logout{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:8px;cursor:pointer;color:#93c5fd;font-size:13px;transition:background .15s}
+.logout:hover{background:#1d4ed8}
+.main{flex:1;overflow-y:auto;padding:24px}
+.page{display:none}
+.page.active{display:block}
+.page-title{font-size:20px;font-weight:500;color:var(--color-text-primary);margin-bottom:4px}
+.page-sub{font-size:13px;color:var(--color-text-secondary);margin-bottom:20px}
+.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:20px}
+.stat{background:var(--color-background-secondary);border-radius:10px;padding:14px;border:0.5px solid var(--color-border-tertiary)}
+.stat-label{font-size:11px;color:var(--color-text-secondary);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+.stat-value{font-size:22px;font-weight:500;color:var(--color-text-primary)}
+.stat-sub{font-size:11px;color:var(--color-text-secondary);margin-top:2px}
+.stat.blue .stat-value{color:#1e40af}
+.stat.green .stat-value{color:#166534}
+.stat.red .stat-value{color:#991b1b}
+.stat.amber .stat-value{color:#92400e}
+.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin-bottom:16px}
+.card{background:var(--color-background-primary);border-radius:12px;border:0.5px solid var(--color-border-tertiary);padding:16px}
+.card-title{font-size:14px;font-weight:500;color:var(--color-text-primary);margin-bottom:4px}
+.card-sub{font-size:12px;color:var(--color-text-secondary);margin-bottom:14px}
+.bar-row{margin-bottom:12px}
+.bar-label{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}
+.bar-co{font-size:12px;font-weight:500;color:var(--color-text-primary)}
+.bar-pct{font-size:12px;font-weight:500}
+.bar-track{height:10px;background:var(--color-background-tertiary);border-radius:5px;overflow:hidden;position:relative}
+.bar-fill{height:100%;border-radius:5px;transition:width .6s}
+.bar-meta{font-size:11px;color:var(--color-text-secondary);margin-top:3px}
+.threshold-line{position:absolute;left:60%;top:0;width:1px;height:100%;background:#6366f1;opacity:.5}
+.risk-table{width:100%;border-collapse:collapse;font-size:13px}
+.risk-table th{text-align:left;padding:6px 10px;font-size:11px;font-weight:500;color:var(--color-text-secondary);text-transform:uppercase;letter-spacing:.04em;border-bottom:0.5px solid var(--color-border-tertiary)}
+.risk-table td{padding:8px 10px;border-bottom:0.5px solid var(--color-border-tertiary);color:var(--color-text-primary)}
+.risk-table tr:last-child td{border-bottom:none}
+.badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:500}
+.badge-red{background:#fee2e2;color:#991b1b}
+.badge-amber{background:#fef3c7;color:#92400e}
+.badge-green{background:#dcfce7;color:#166534}
+.badge-blue{background:#dbeafe;color:#1e40af}
+.badge-purple{background:#ede9fe;color:#5b21b6}
+.alert-box{border-radius:10px;padding:14px 16px;margin-bottom:16px;border:0.5px solid}
+.alert-red{background:#fee2e2;border-color:#fca5a5}
+.alert-red .alert-title{color:#991b1b;font-weight:500;font-size:13px}
+.alert-red .alert-body{color:#b91c1c;font-size:12px;margin-top:3px}
+.progress-item{margin-bottom:16px}
+.progress-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.progress-name{font-size:13px;font-weight:500;color:var(--color-text-primary)}
+.progress-desc{font-size:11px;color:var(--color-text-secondary);margin-top:1px}
+.progress-pct{font-size:14px;font-weight:500}
+.progress-track{height:8px;background:var(--color-background-tertiary);border-radius:4px;overflow:hidden}
+.progress-fill{height:100%;border-radius:4px}
+.progress-foot{display:flex;justify-content:space-between;font-size:11px;color:var(--color-text-secondary);margin-top:3px}
+.course-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:0.5px solid var(--color-border-tertiary)}
+.course-row:last-child{border-bottom:none}
+.course-code{font-size:13px;font-weight:500;color:#1e40af}
+.course-name{font-size:12px;color:var(--color-text-secondary)}
+.course-stats{display:flex;align-items:center;gap:14px;font-size:12px;color:var(--color-text-secondary)}
+.pdf-btn{background:#1e40af;color:#fff;border:none;padding:6px 12px;border-radius:6px;font-size:11px;cursor:pointer;font-weight:500}
+.pdf-btn:hover{background:#1d4ed8}
+.dropzone{border:2px dashed var(--color-border-secondary);border-radius:12px;padding:32px;text-align:center;cursor:pointer;transition:border-color .2s;margin-bottom:16px}
+.dropzone:hover{border-color:#1e40af}
+.dropzone-icon{font-size:28px;margin-bottom:8px}
+.dropzone-title{font-size:14px;font-weight:500;color:var(--color-text-primary)}
+.dropzone-sub{font-size:12px;color:var(--color-text-secondary);margin-top:4px}
+.template-card{background:#dbeafe;border:0.5px solid #93c5fd;border-radius:10px;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.template-title{font-size:13px;font-weight:500;color:#1e3a8a}
+.template-sub{font-size:12px;color:#1d4ed8;margin-top:2px}
+.dl-btn{background:#1e40af;color:#fff;border:none;padding:7px 14px;border-radius:8px;font-size:12px;cursor:pointer;font-weight:500}
+.toast{display:none;background:#166534;color:#dcfce7;padding:10px 16px;border-radius:8px;font-size:13px;margin-bottom:16px;font-weight:500}
+.toast.show{display:block}
+</style>
+
+<div class="app">
+<div class="sidebar">
+  <div class="sidebar-logo">
+    <h1>AcademiQ</h1>
+    <p>OBE Intelligence Platform</p>
+  </div>
+  <div class="sidebar-user">
+    <div class="avatar" id="av">DR</div>
+    <div>
+      <div class="user-name" id="uname">Dr. Rahman</div>
+      <div class="user-role" id="urole">faculty</div>
+    </div>
+  </div>
+  <nav class="nav" id="nav"></nav>
+  <div class="sidebar-footer">
+    <div class="logout" onclick="showLogin()">
+      <span class="nav-icon">&#x2190;</span> Logout
+    </div>
+  </div>
+</div>
+
+<div class="main">
+
+<!-- LOGIN -->
+<div class="page active" id="page-login" style="max-width:380px;margin:60px auto">
+  <div style="text-align:center;margin-bottom:28px">
+    <div style="width:52px;height:52px;background:#1e40af;border-radius:14px;display:flex;align-items:center;justify-content:center;margin:0 auto 14px;color:#fff;font-size:22px;font-weight:500">A</div>
+    <div style="font-size:20px;font-weight:500;color:var(--color-text-primary)">AcademiQ</div>
+    <div style="font-size:13px;color:var(--color-text-secondary);margin-top:4px">OBE Intelligence Platform</div>
+  </div>
+  <div class="card">
+    <div style="margin-bottom:14px">
+      <label style="font-size:12px;color:var(--color-text-secondary);display:block;margin-bottom:5px">Email</label>
+      <input type="email" id="login-email" value="faculty@diu.edu.bd" style="width:100%"/>
+    </div>
+    <div style="margin-bottom:16px">
+      <label style="font-size:12px;color:var(--color-text-secondary);display:block;margin-bottom:5px">Password</label>
+      <input type="password" id="login-pass" value="test1234" style="width:100%"/>
+    </div>
+    <button onclick="doLogin()" style="width:100%;background:#1e40af;color:#fff;border:none;padding:10px;border-radius:8px;font-size:14px;font-weight:500;cursor:pointer">Sign In</button>
+    <div style="margin-top:16px;background:var(--color-background-secondary);border-radius:8px;padding:12px">
+      <div style="font-size:11px;font-weight:500;color:var(--color-text-secondary);margin-bottom:6px">Demo accounts:</div>
+      <div onclick="setDemo('faculty@diu.edu.bd')" style="font-size:12px;color:#1e40af;cursor:pointer;padding:3px 0">Faculty — faculty@diu.edu.bd</div>
+      <div onclick="setDemo('dean@diu.edu.bd')" style="font-size:12px;color:#1e40af;cursor:pointer;padding:3px 0">Dean — dean@diu.edu.bd</div>
+      <div onclick="setDemo('alice@diu.edu.bd')" style="font-size:12px;color:#1e40af;cursor:pointer;padding:3px 0">Student — alice@diu.edu.bd</div>
+      <div onclick="setDemo('david@diu.edu.bd')" style="font-size:12px;color:#1e40af;cursor:pointer;padding:3px 0">At-risk student — david@diu.edu.bd</div>
+    </div>
+  </div>
+</div>
+
+<!-- FACULTY DASHBOARD -->
+<div class="page" id="page-dashboard">
+  <div class="page-title">Faculty Dashboard</div>
+  <div class="page-sub" id="course-sub">CSE301 — Data Structures & Algorithms · Spring 2026</div>
+  <div class="stats">
+    <div class="stat blue"><div class="stat-label">Students</div><div class="stat-value">10</div><div class="stat-sub">enrolled</div></div>
+    <div class="stat green"><div class="stat-label">COs Met</div><div class="stat-value">3/4</div><div class="stat-sub">above 60% threshold</div></div>
+    <div class="stat amber"><div class="stat-label">Avg Attainment</div><div class="stat-value">62.5%</div><div class="stat-sub">class average</div></div>
+    <div class="stat red"><div class="stat-label">High Risk</div><div class="stat-value">3</div><div class="stat-sub">students flagged</div></div>
+  </div>
+  <div class="grid2">
+    <div class="card">
+      <div class="card-title">CO Attainment</div>
+      <div class="card-sub">Purple line = 60% target threshold</div>
+      <div id="co-bars"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">At-risk students</div>
+      <div class="card-sub">Sorted by AI risk score</div>
+      <table class="risk-table">
+        <thead><tr><th>Student</th><th>Risk</th><th>Score</th><th>COs</th></tr></thead>
+        <tbody>
+          <tr><td>David Khan</td><td><span class="badge badge-red">high</span></td><td style="color:#991b1b;font-weight:500">97.3%</td><td style="font-size:11px;color:var(--color-text-secondary)">CO1,CO2,CO3</td></tr>
+          <tr><td>Farhan Uddin</td><td><span class="badge badge-red">high</span></td><td style="color:#991b1b;font-weight:500">97.3%</td><td style="font-size:11px;color:var(--color-text-secondary)">CO1,CO2,CO3</td></tr>
+          <tr><td>Irfan Molla</td><td><span class="badge badge-red">high</span></td><td style="color:#991b1b;font-weight:500">97.1%</td><td style="font-size:11px;color:var(--color-text-secondary)">CO1,CO2,CO3</td></tr>
+          <tr><td>Bob Hassan</td><td><span class="badge badge-amber">medium</span></td><td style="color:#92400e;font-weight:500">51.9%</td><td style="font-size:11px;color:var(--color-text-secondary)">CO2</td></tr>
+          <tr><td>Alice Ahmed</td><td><span class="badge badge-green">low</span></td><td style="color:#166534;font-weight:500">6.5%</td><td style="font-size:11px;color:var(--color-text-secondary)">None</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- AT RISK -->
+<div class="page" id="page-at-risk">
+  <div class="page-title">At-risk students</div>
+  <div class="page-sub">AI predictions — CSE301 · Week 9 analysis</div>
+  <div id="toast-alert" class="toast">Alerts sent to 4 students successfully!</div>
+  <div style="display:flex;gap:10px;margin-bottom:16px">
+    <button onclick="sendAlerts()" style="background:#1e40af;color:#fff;border:none;padding:8px 16px;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer">Send alerts to at-risk</button>
+    <button style="padding:8px 16px;border-radius:8px;font-size:13px;cursor:pointer">Preview only</button>
+  </div>
+  <div class="card">
+    <table class="risk-table" style="width:100%">
+      <thead><tr><th>Student</th><th>Risk level</th><th>AI score</th><th>Early %</th><th>At-risk COs</th><th>Action</th></tr></thead>
+      <tbody>
+        <tr><td style="font-weight:500">David Khan</td><td><span class="badge badge-red">high</span></td><td style="color:#991b1b;font-weight:500">97.3%</td><td>39.7%</td><td style="font-size:11px">CO1, CO2, CO3</td><td><span class="badge badge-blue" style="cursor:pointer">Alert sent</span></td></tr>
+        <tr><td style="font-weight:500">Farhan Uddin</td><td><span class="badge badge-red">high</span></td><td style="color:#991b1b;font-weight:500">97.3%</td><td>44.0%</td><td style="font-size:11px">CO1, CO2, CO3</td><td><span class="badge badge-blue" style="cursor:pointer">Alert sent</span></td></tr>
+        <tr><td style="font-weight:500">Irfan Molla</td><td><span class="badge badge-red">high</span></td><td style="color:#991b1b;font-weight:500">97.1%</td><td>38.1%</td><td style="font-size:11px">CO1, CO2, CO3</td><td><span class="badge badge-blue" style="cursor:pointer">Alert sent</span></td></tr>
+        <tr><td style="font-weight:500">Bob Hassan</td><td><span class="badge badge-amber">medium</span></td><td style="color:#92400e;font-weight:500">51.9%</td><td>59.9%</td><td style="font-size:11px">CO2</td><td><span class="badge badge-blue" style="cursor:pointer">Alert sent</span></td></tr>
+        <tr><td style="font-weight:500">Eva Rahman</td><td><span class="badge badge-green">low</span></td><td style="color:#166534;font-weight:500">8.0%</td><td>69.0%</td><td style="font-size:11px">—</td><td><span style="font-size:12px;color:var(--color-text-secondary)">No action</span></td></tr>
+        <tr><td style="font-weight:500">Alice Ahmed</td><td><span class="badge badge-green">low</span></td><td style="color:#166534;font-weight:500">6.5%</td><td>85.4%</td><td style="font-size:11px">—</td><td><span style="font-size:12px;color:var(--color-text-secondary)">No action</span></td></tr>
+        <tr><td style="font-weight:500">Carol Islam</td><td><span class="badge badge-green">low</span></td><td style="color:#166534;font-weight:500">6.5%</td><td>89.1%</td><td style="font-size:11px">—</td><td><span style="font-size:12px;color:var(--color-text-secondary)">No action</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- UPLOAD -->
+<div class="page" id="page-upload">
+  <div class="page-title">Upload marksheet</div>
+  <div class="page-sub">Import student marks via CSV or Excel</div>
+  <div class="template-card">
+    <div>
+      <div class="template-title">Need the Excel template?</div>
+      <div class="template-sub">Download, fill marks column, upload back</div>
+    </div>
+    <button class="dl-btn" onclick="showDownload()">Download template</button>
+  </div>
+  <div class="dropzone" onclick="showUpload()">
+    <div class="dropzone-icon">&#x2191;</div>
+    <div class="dropzone-title" id="dz-title">Drag & drop your marksheet here</div>
+    <div class="dropzone-sub">Supports .csv, .xlsx, .xls</div>
+  </div>
+  <div id="upload-result" style="display:none" class="card">
+    <div class="card-title" style="margin-bottom:12px">Validation result</div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:12px">
+      <div style="background:var(--color-background-secondary);border-radius:8px;padding:10px;text-align:center">
+        <div style="font-size:20px;font-weight:500;color:var(--color-text-primary)">6</div>
+        <div style="font-size:11px;color:var(--color-text-secondary)">Total rows</div>
+      </div>
+      <div style="background:#dcfce7;border-radius:8px;padding:10px;text-align:center">
+        <div style="font-size:20px;font-weight:500;color:#166534">6</div>
+        <div style="font-size:11px;color:#166534">Valid</div>
+      </div>
+      <div style="background:#fee2e2;border-radius:8px;padding:10px;text-align:center">
+        <div style="font-size:20px;font-weight:500;color:#991b1b">0</div>
+        <div style="font-size:11px;color:#991b1b">Errors</div>
+      </div>
+    </div>
+    <button onclick="showSaved()" style="background:#1e40af;color:#fff;border:none;padding:8px 16px;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer">Save to database</button>
+  </div>
+  <div id="saved-msg" style="display:none;background:#dcfce7;border:0.5px solid #86efac;border-radius:10px;padding:14px 16px;color:#166534;font-size:13px;font-weight:500">
+    Saved! 6 new records inserted into database.
+  </div>
+</div>
+
+<!-- DEAN DASHBOARD -->
+<div class="page" id="page-dean">
+  <div class="page-title">Dean Dashboard</div>
+  <div class="page-sub">University-wide OBE performance overview</div>
+  <div class="stats">
+    <div class="stat blue"><div class="stat-label">Total courses</div><div class="stat-value">1</div></div>
+    <div class="stat blue"><div class="stat-label">Total students</div><div class="stat-value">10</div></div>
+    <div class="stat green"><div class="stat-label">Avg attainment</div><div class="stat-value">62.5%</div></div>
+    <div class="stat amber"><div class="stat-label">Critical courses</div><div class="stat-value">0</div></div>
+  </div>
+  <div class="card" style="margin-bottom:16px">
+    <div class="card-title" style="margin-bottom:12px">All courses</div>
+    <div class="course-row">
+      <div>
+        <div class="course-code">CSE301</div>
+        <div class="course-name">Data Structures & Algorithms</div>
+      </div>
+      <div class="course-stats">
+        <span>Spring 2026</span>
+        <span>10 students</span>
+        <span>3/4 COs met</span>
+        <span style="font-weight:500;color:#92400e">62.5%</span>
+        <span class="badge badge-amber">Warning</span>
+        <button class="pdf-btn" onclick="showPDF()">PDF report</button>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title" style="margin-bottom:12px">PO attainment — BSc CSE program</div>
+    <div class="bar-row">
+      <div class="bar-label"><span class="bar-co">PO1 — Apply computing knowledge</span><span class="bar-pct" style="color:#166534">70.0%</span></div>
+      <div class="bar-track"><div class="bar-fill" style="width:70%;background:#10b981"></div><div class="threshold-line"></div></div>
+      <div class="bar-meta">Level 3 — Excellent · threshold met</div>
+    </div>
+    <div class="bar-row">
+      <div class="bar-label"><span class="bar-co">PO2 — Design software systems</span><span class="bar-pct" style="color:#166534">70.0%</span></div>
+      <div class="bar-track"><div class="bar-fill" style="width:70%;background:#10b981"></div><div class="threshold-line"></div></div>
+      <div class="bar-meta">Level 3 — Excellent · threshold met</div>
+    </div>
+    <div class="bar-row">
+      <div class="bar-label"><span class="bar-co">PO3 — Evaluate computing systems</span><span class="bar-pct" style="color:#92400e">53.3%</span></div>
+      <div class="bar-track"><div class="bar-fill" style="width:53.3%;background:#f59e0b"></div><div class="threshold-line"></div></div>
+      <div class="bar-meta">Level 2 — Satisfactory · below threshold</div>
+    </div>
+  </div>
+</div>
+
+<!-- STUDENT (good) -->
+<div class="page" id="page-student">
+  <div class="page-title">Welcome, Alice Ahmed</div>
+  <div class="page-sub">Your learning outcome progress — Spring 2026</div>
+  <div class="alert-box" style="background:#dcfce7;border-color:#86efac;margin-bottom:16px">
+    <div style="color:#166534;font-weight:500;font-size:13px">Your AI risk assessment</div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-top:6px">
+      <div style="color:#15803d;font-size:12px">Based on Week 1–9 performance · No COs at risk</div>
+      <div style="text-align:right"><div style="font-size:22px;font-weight:500;color:#166534">6.5%</div><span class="badge badge-green">low risk</span></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title" style="margin-bottom:14px">Your CO progress</div>
+    <div class="progress-item">
+      <div class="progress-top">
+        <div><div class="progress-name">CO1 <span style="font-size:11px;color:var(--color-text-secondary);font-weight:400">Implement fundamental data structures</span></div></div>
+        <div style="text-align:right"><span class="progress-pct" style="color:#166534">88%</span> <span class="badge badge-green" style="margin-left:4px">attained</span></div>
+      </div>
+      <div class="progress-track"><div class="progress-fill" style="width:88%;background:#10b981"></div></div>
+      <div class="progress-foot"><span>17.6/20 marks</span><span class="badge badge-purple" style="font-size:10px">Remember</span></div>
+    </div>
+    <div class="progress-item">
+      <div class="progress-top">
+        <div><div class="progress-name">CO2 <span style="font-size:11px;color:var(--color-text-secondary);font-weight:400">Analyze algorithm complexity</span></div></div>
+        <div style="text-align:right"><span class="progress-pct" style="color:#166534">82%</span> <span class="badge badge-green" style="margin-left:4px">attained</span></div>
+      </div>
+      <div class="progress-track"><div class="progress-fill" style="width:82%;background:#10b981"></div></div>
+      <div class="progress-foot"><span>41/50 marks</span><span class="badge badge-purple" style="font-size:10px">Analyze</span></div>
+    </div>
+    <div class="progress-item">
+      <div class="progress-top">
+        <div><div class="progress-name">CO3 <span style="font-size:11px;color:var(--color-text-secondary);font-weight:400">Design efficient algorithms</span></div></div>
+        <div style="text-align:right"><span class="progress-pct" style="color:#166534">79%</span> <span class="badge badge-green" style="margin-left:4px">attained</span></div>
+      </div>
+      <div class="progress-track"><div class="progress-fill" style="width:79%;background:#10b981"></div></div>
+      <div class="progress-foot"><span>23.7/30 marks</span><span class="badge badge-purple" style="font-size:10px">Create</span></div>
+    </div>
+    <div class="progress-item">
+      <div class="progress-top">
+        <div><div class="progress-name">CO4 <span style="font-size:11px;color:var(--color-text-secondary);font-weight:400">Evaluate data structure trade-offs</span></div></div>
+        <div style="text-align:right"><span class="progress-pct" style="color:#166534">91%</span> <span class="badge badge-green" style="margin-left:4px">attained</span></div>
+      </div>
+      <div class="progress-track"><div class="progress-fill" style="width:91%;background:#10b981"></div></div>
+      <div class="progress-foot"><span>36.4/40 marks</span><span class="badge badge-purple" style="font-size:10px">Evaluate</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- STUDENT AT RISK -->
+<div class="page" id="page-atrisk-student">
+  <div class="page-title">Welcome, David Khan</div>
+  <div class="page-sub">Your learning outcome progress — Spring 2026</div>
+  <div class="alert-box alert-red" style="margin-bottom:16px">
+    <div class="alert-title">AI early warning — action required</div>
+    <div class="alert-body">You are predicted to struggle with CO1, CO2, CO3. Please contact your faculty advisor immediately.</div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-top:8px">
+      <div style="color:#b91c1c;font-size:12px">At-risk COs: CO1, CO2, CO3</div>
+      <div style="text-align:right"><div style="font-size:22px;font-weight:500;color:#991b1b">97.3%</div><span class="badge badge-red">high risk</span></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title" style="margin-bottom:14px">Your CO progress</div>
+    <div class="progress-item">
+      <div class="progress-top">
+        <div><div class="progress-name">CO1 <span style="font-size:11px;color:var(--color-text-secondary);font-weight:400">Implement fundamental data structures</span></div></div>
+        <div style="text-align:right"><span class="progress-pct" style="color:#991b1b">38%</span> <span class="badge badge-red" style="margin-left:4px">not attained</span></div>
+      </div>
+      <div class="progress-track"><div class="progress-fill" style="width:38%;background:#ef4444"></div></div>
+      <div class="progress-foot"><span>7.6/20 marks</span><span class="badge badge-purple" style="font-size:10px">Remember</span></div>
+    </div>
+    <div class="progress-item">
+      <div class="progress-top">
+        <div><div class="progress-name">CO2 <span style="font-size:11px;color:var(--color-text-secondary);font-weight:400">Analyze algorithm complexity</span></div></div>
+        <div style="text-align:right"><span class="progress-pct" style="color:#991b1b">31%</span> <span class="badge badge-red" style="margin-left:4px">not attained</span></div>
+      </div>
+      <div class="progress-track"><div class="progress-fill" style="width:31%;background:#ef4444"></div></div>
+      <div class="progress-foot"><span>15.5/50 marks</span><span class="badge badge-purple" style="font-size:10px">Analyze</span></div>
+    </div>
+    <div class="progress-item">
+      <div class="progress-top">
+        <div><div class="progress-name">CO3 <span style="font-size:11px;color:var(--color-text-secondary);font-weight:400">Design efficient algorithms</span></div></div>
+        <div style="text-align:right"><span class="progress-pct" style="color:#991b1b">42%</span> <span class="badge badge-red" style="margin-left:4px">not attained</span></div>
+      </div>
+      <div class="progress-track"><div class="progress-fill" style="width:42%;background:#ef4444"></div></div>
+      <div class="progress-foot"><span>12.6/30 marks</span><span class="badge badge-purple" style="font-size:10px">Create</span></div>
+    </div>
+    <div class="progress-item">
+      <div class="progress-top">
+        <div><div class="progress-name">CO4 <span style="font-size:11px;color:var(--color-text-secondary);font-weight:400">Evaluate data structure trade-offs</span></div></div>
+        <div style="text-align:right"><span class="progress-pct" style="color:#f59e0b">58%</span> <span class="badge badge-amber" style="margin-left:4px">borderline</span></div>
+      </div>
+      <div class="progress-track"><div class="progress-fill" style="width:58%;background:#f59e0b"></div></div>
+      <div class="progress-foot"><span>23.2/40 marks</span><span class="badge badge-purple" style="font-size:10px">Evaluate</span></div>
+    </div>
+  </div>
+</div>
+
+</div>
+</div>
+
+<script>
+const coData=[
+  {co:"CO1",pct:70,pass:7,total:10,met:true},
+  {co:"CO2",pct:50,pass:5,total:10,met:false},
+  {co:"CO3",pct:70,pass:7,total:10,met:true},
+  {co:"CO4",pct:60,pass:6,total:10,met:true},
+]
+
+const navs={
+  faculty:[
+    {id:"dashboard",icon:"&#9632;",label:"Dashboard"},
+    {id:"at-risk",icon:"&#9679;",label:"At-risk students"},
+    {id:"upload",icon:"&#8679;",label:"Upload marks"},
+  ],
+  dean:[
+    {id:"dean",icon:"&#9632;",label:"Dashboard"},
+    {id:"dean",icon:"&#9632;",label:"All courses"},
+  ],
+  student:[
+    {id:"student",icon:"&#9632;",label:"Dashboard"},
+    {id:"student",icon:"&#9632;",label:"My CO progress"},
+  ],
+  atrisk:[
+    {id:"atrisk-student",icon:"&#9632;",label:"Dashboard"},
+    {id:"atrisk-student",icon:"&#9632;",label:"My CO progress"},
+  ]
+}
+
+const users={
+  "faculty@diu.edu.bd":{name:"Dr. Rahman",role:"faculty",nav:"faculty",initials:"DR",home:"dashboard"},
+  "dean@diu.edu.bd":{name:"Dean Abdullah",role:"dean",nav:"dean",initials:"DA",home:"dean"},
+  "alice@diu.edu.bd":{name:"Alice Ahmed",role:"student",nav:"student",initials:"AA",home:"student"},
+  "david@diu.edu.bd":{name:"David Khan",role:"student",nav:"atrisk",initials:"DK",home:"atrisk-student"},
+}
+
+function renderBars(){
+  const container=document.getElementById("co-bars")
+  if(!container)return
+  container.innerHTML=coData.map(d=>{
+    const color=d.pct>=70?"#10b981":d.pct>=60?"#f59e0b":"#ef4444"
+    const pctColor=d.pct>=70?"#166534":d.pct>=60?"#92400e":"#991b1b"
+    return `<div class="bar-row">
+      <div class="bar-label"><span class="bar-co">${d.co}</span><span class="bar-pct" style="color:${pctColor}">${d.pct}%</span></div>
+      <div class="bar-track">
+        <div class="bar-fill" style="width:${d.pct}%;background:${color}"></div>
+        <div class="threshold-line"></div>
+      </div>
+      <div class="bar-meta">${d.pass}/${d.total} students · ${d.met?"threshold met":"below threshold"}</div>
+    </div>`
+  }).join("")
+}
+
+function buildNav(type){
+  const nav=document.getElementById("nav")
+  const items=navs[type]||navs.faculty
+  nav.innerHTML=items.map((it,i)=>`
+    <div class="nav-item${i===0?" active":""}" onclick="switchPage('${it.id}',this)">
+      <span class="nav-icon">${it.icon}</span>${it.label}
+    </div>`).join("")
+}
+
+function switchPage(id,el){
+  document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"))
+  const p=document.getElementById("page-"+id)
+  if(p)p.classList.add("active")
+  document.querySelectorAll(".nav-item").forEach(n=>n.classList.remove("active"))
+  if(el)el.classList.add("active")
+}
+
+function setDemo(email){
+  document.getElementById("login-email").value=email
+  document.getElementById("login-pass").value="test1234"
+}
+
+function doLogin(){
+  const email=document.getElementById("login-email").value.trim()
+  const u=users[email]
+  if(!u){alert("Use one of the demo accounts shown below");return}
+  document.getElementById("av").textContent=u.initials
+  document.getElementById("uname").textContent=u.name
+  document.getElementById("urole").textContent=u.role
+  buildNav(u.nav)
+  renderBars()
+  document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"))
+  const p=document.getElementById("page-"+u.home)
+  if(p)p.classList.add("active")
+}
+
+function showLogin(){
+  document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"))
+  document.getElementById("page-login").classList.add("active")
+  document.getElementById("nav").innerHTML=""
+}
+
+function sendAlerts(){
+  const t=document.getElementById("toast-alert")
+  t.classList.add("show")
+  setTimeout(()=>t.classList.remove("show"),3000)
+}
+
+function showDownload(){
+  alert("Template downloaded: marks_template_course_1.xlsx")
+}
+
+function showUpload(){
+  document.getElementById("dz-title").textContent="marks_sample.xlsx uploaded"
+  setTimeout(()=>{
+    document.getElementById("upload-result").style.display="block"
+  },400)
+}
+
+function showSaved(){
+  document.getElementById("upload-result").style.display="none"
+  document.getElementById("saved-msg").style.display="block"
+}
+
+function showPDF(){
+  alert("Downloading: OBE_Report_CSE301_Spring_2026.pdf")
+}
+</script>
