@@ -1,0 +1,10 @@
+course_code (reference),student_id,student_name (reference),assessment_id,assessment_name (reference),max_marks (reference),obtained_marks
+CSE311,3,Arafat Rahman,1,Attendance,7.0,6.5
+CSE311,3,Arafat Rahman,2,Quiz,15.0,13.0
+CSE311,3,Arafat Rahman,5,Midterm Exam,25.0,21.0
+CSE311,4,Imran Hossain,1,Attendance,7.0,5.0
+CSE311,4,Imran Hossain,2,Quiz,15.0,10.0
+CSE311,4,Imran Hossain,5,Midterm Exam,25.0,15.0
+CSE311,5,Milon Ali,1,Attendance,7.0,3.0
+CSE311,5,Milon Ali,2,Quiz,15.0,6.0
+CSE311,5,Milon Ali,5,Midterm Exam,25.0,10.0

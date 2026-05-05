@@ -5,7 +5,7 @@ from email.mime.multipart import MIMEMultipart
 from datetime import datetime
 from sqlalchemy.orm import Session
 from core.config import settings
-from models.db_models import Course, CourseOutcome
+from models.db_models import Course, CourseLearningOutcome
 from services.ml_predictor import predict_course_risk
 
 logger = logging.getLogger(__name__)

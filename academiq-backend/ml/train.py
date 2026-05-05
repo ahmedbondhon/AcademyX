@@ -1,6 +1,6 @@
 """
-Train the XGBoost risk prediction model.
-Run with: python ml/train.py
+AcademiQ — Train the XGBoost Risk Prediction Model
+Run: python ml/train.py
 """
 import sys
 import os
@@ -11,11 +11,7 @@ import pandas as pd
 import numpy as np
 from xgboost import XGBClassifier
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import (
-    classification_report,
-    accuracy_score,
-    roc_auc_score
-)
+from sklearn.metrics import classification_report, accuracy_score, roc_auc_score
 from database.connection import SessionLocal
 from ml.features import extract_features_for_course, FEATURE_COLUMNS
 from models.db_models import Course
@@ -26,155 +22,87 @@ MODEL_PATH = os.path.join(
 )
 
 def generate_synthetic_training_data(base_features: list) -> pd.DataFrame:
-    """
-    We have 10 students in the demo database.
-    That's not enough to train a real ML model (need at least 50+).
-    This function augments the real data with synthetic variations
-    to create a proper training dataset.
-    """
+    """Augments real DIU sample data with synthetic variations to train a robust ML model."""
     np.random.seed(42)
-    rows = []
+    rows = list(base_features)
 
-    # Use real data as base
-    for f in base_features:
-        rows.append(f)
-
-    # Generate synthetic students based on real patterns
-    # Strong students (at_risk = 0)
     for _ in range(40):
+        # Strong students
         rows.append({
-            "student_id":      9999,
-            "student_name":    "Synthetic",
-            "course_id":       1,
-            "early_pct":       np.random.uniform(70, 98),
-            "submission_rate": np.random.uniform(80, 100),
-            "co1_early_pct":   np.random.uniform(70, 98),
-            "co2_early_pct":   np.random.uniform(65, 95),
-            "co3_early_pct":   np.random.uniform(70, 98),
-            "co4_early_pct":   np.random.uniform(68, 95),
-            "at_risk":         0,
-            "final_pct":       np.random.uniform(70, 98),
+            "early_pct": np.random.uniform(70, 95),
+            "submission_rate": np.random.uniform(0.9, 1.0),
+            "clo1_early_pct": np.random.uniform(70, 100),
+            "clo2_early_pct": np.random.uniform(65, 95),
+            "clo3_early_pct": np.random.uniform(70, 100),
+            "clo4_early_pct": np.random.uniform(70, 100),
+            "at_risk": 0
         })
-
-    # Average students (at_risk = 0, borderline)
-    for _ in range(30):
+        # Average students
         rows.append({
-            "student_id":      9999,
-            "student_name":    "Synthetic",
-            "course_id":       1,
-            "early_pct":       np.random.uniform(55, 72),
-            "submission_rate": np.random.uniform(60, 85),
-            "co1_early_pct":   np.random.uniform(55, 72),
-            "co2_early_pct":   np.random.uniform(50, 70),
-            "co3_early_pct":   np.random.uniform(55, 72),
-            "co4_early_pct":   np.random.uniform(52, 70),
-            "at_risk":         0,
-            "final_pct":       np.random.uniform(60, 72),
+            "early_pct": np.random.uniform(55, 75),
+            "submission_rate": np.random.uniform(0.7, 1.0),
+            "clo1_early_pct": np.random.uniform(50, 80),
+            "clo2_early_pct": np.random.uniform(55, 80),
+            "clo3_early_pct": np.random.uniform(40, 75),
+            "clo4_early_pct": np.random.uniform(50, 80),
+            "at_risk": 0
         })
-
-    # Weak students (at_risk = 1)
-    for _ in range(30):
+        # At-risk students
         rows.append({
-            "student_id":      9999,
-            "student_name":    "Synthetic",
-            "course_id":       1,
-            "early_pct":       np.random.uniform(15, 52),
-            "submission_rate": np.random.uniform(20, 60),
-            "co1_early_pct":   np.random.uniform(10, 50),
-            "co2_early_pct":   np.random.uniform(10, 48),
-            "co3_early_pct":   np.random.uniform(15, 52),
-            "co4_early_pct":   np.random.uniform(10, 50),
-            "at_risk":         1,
-            "final_pct":       np.random.uniform(15, 55),
+            "early_pct": np.random.uniform(20, 55),
+            "submission_rate": np.random.uniform(0.4, 0.8),
+            "clo1_early_pct": np.random.uniform(10, 50),
+            "clo2_early_pct": np.random.uniform(20, 55),
+            "clo3_early_pct": np.random.uniform(10, 50),
+            "clo4_early_pct": np.random.uniform(20, 60),
+            "at_risk": 1
         })
 
     return pd.DataFrame(rows)
 
-
-def train():
-    print("AcademiQ — ML Risk Model Training")
-    print("=" * 45)
-
+def run_training():
     db = SessionLocal()
-
-    # Extract features from real database
-    print("Extracting features from database...")
     courses = db.query(Course).all()
+    
     all_features = []
-    for course in courses:
-        features = extract_features_for_course(course.id, db)
-        all_features.extend(features)
-        print(f"  Course {course.code}: {len(features)} students extracted")
-
+    for c in courses:
+        all_features.extend(extract_features_for_course(c.id, db))
+        
     db.close()
 
     if not all_features:
-        print("No data found. Make sure seed_data.py has been run.")
+        print("Error: No early data found in database to train model.")
         return
 
-    # Augment with synthetic data for training
-    print(f"\nReal students extracted: {len(all_features)}")
-    print("Augmenting with synthetic training data...")
     df = generate_synthetic_training_data(all_features)
-    print(f"Total training samples: {len(df)}")
-
-    # Prepare features and labels
+    
     X = df[FEATURE_COLUMNS]
     y = df["at_risk"]
 
-    print(f"\nClass distribution:")
-    print(f"  Not at risk (0): {(y == 0).sum()}")
-    print(f"  At risk     (1): {(y == 1).sum()}")
-
-    # Train/test split
     X_train, X_test, y_train, y_test = train_test_split(
-        X, y,
-        test_size=0.2,
-        random_state=42,
-        stratify=y
+        X, y, test_size=0.2, random_state=42, stratify=y
     )
 
-    # Train XGBoost model
-    print("\nTraining XGBoost model...")
+    print("\nTraining XGBoost model for Week 6 Early Alerts...")
     model = XGBClassifier(
-        n_estimators=100,
-        max_depth=4,
-        learning_rate=0.1,
-        subsample=0.8,
-        colsample_bytree=0.8,
-        random_state=42,
-        eval_metric="logloss",
-        verbosity=0,
+        n_estimators=100, max_depth=4, learning_rate=0.1,
+        subsample=0.8, colsample_bytree=0.8, random_state=42,
+        eval_metric="logloss", verbosity=0
     )
     model.fit(X_train, y_train)
 
-    # Evaluate
-    y_pred      = model.predict(X_test)
+    y_pred = model.predict(X_test)
     y_pred_prob = model.predict_proba(X_test)[:, 1]
-    accuracy    = accuracy_score(y_test, y_pred)
-    auc         = roc_auc_score(y_test, y_pred_prob)
-
+    
     print(f"\nModel Evaluation:")
-    print(f"  Accuracy : {accuracy:.2%}")
-    print(f"  AUC-ROC  : {auc:.3f}")
-    print(f"\nDetailed Report:")
-    print(classification_report(y_test, y_pred,
-          target_names=["Not at risk", "At risk"]))
+    print(f"  Accuracy : {accuracy_score(y_test, y_pred):.2%}")
+    print(f"  AUC-ROC  : {roc_auc_score(y_test, y_pred_prob):.3f}")
+    print(f"\nDetailed Report:\n{classification_report(y_test, y_pred, target_names=['Not at risk', 'At risk'])}")
 
-    # Feature importance
-    print("Feature Importance:")
-    importance = dict(zip(FEATURE_COLUMNS, model.feature_importances_))
-    for feat, imp in sorted(importance.items(), key=lambda x: -x[1]):
-        bar = "█" * int(imp * 40)
-        print(f"  {feat:20s} {imp:.3f} {bar}")
-
-    # Save model
     os.makedirs(os.path.dirname(MODEL_PATH), exist_ok=True)
     with open(MODEL_PATH, "wb") as f:
         pickle.dump(model, f)
-    print(f"\nModel saved to: {MODEL_PATH}")
-    print("Training complete!")
-
+    print(f"\nModel saved successfully to: {MODEL_PATH}")
 
 if __name__ == "__main__":
-    train()
+    run_training()

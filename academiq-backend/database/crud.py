@@ -1,8 +1,8 @@
 from sqlalchemy.orm import Session
 from models.db_models import (
     User, Department, Program, Course,
-    CourseOutcome, Assessment, StudentMark,
-    ProgramOutcome, COPOMapping
+    CourseLearningOutcome, Assessment, StudentMark,
+    ProgramOutcome, CLOPLOMapping
 )
 import bcrypt
 
@@ -50,8 +50,8 @@ def get_courses_by_faculty(db: Session, faculty_id: int):
 # ── Course Outcome CRUD ───────────────────────
 
 def get_cos_by_course(db: Session, course_id: int):
-    return db.query(CourseOutcome).filter(
-        CourseOutcome.course_id == course_id
+    return db.query(CourseLearningOutcome).filter(
+        CourseLearningOutcome.course_id == course_id
     ).all()
 
 # ── Assessment CRUD ───────────────────────────
@@ -61,9 +61,9 @@ def get_assessments_by_course(db: Session, course_id: int):
         Assessment.course_id == course_id
     ).all()
 
-def get_assessments_by_co(db: Session, co_id: int):
+def get_assessments_by_co(db: Session, clo_id: int):
     return db.query(Assessment).filter(
-        Assessment.mapped_co_id == co_id
+        Assessment.mapped_clo_id == clo_id
     ).all()
 
 # ── Student Marks CRUD ────────────────────────

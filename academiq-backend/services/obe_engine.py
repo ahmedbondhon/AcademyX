@@ -1,278 +1,219 @@
 from sqlalchemy.orm import Session
-from sqlalchemy import func
 from collections import defaultdict
 from models.db_models import (
-    Course, CourseOutcome, Assessment,
-    StudentMark, User, ProgramOutcome,
-    COPOMapping, Program
+    Course, CourseLearningOutcome, Assessment,
+    StudentMark, ProgramOutcome, CLOPLOMapping, Program, User
 )
 
 # ── Constants ─────────────────────────────────
-ATTAINMENT_THRESHOLD   = 0.60   # student must score >= 60% to "attain" a CO
-CLASS_PASS_THRESHOLD   = 0.60   # 60% of class must attain for CO to be "met"
-LEVEL_3_THRESHOLD      = 70.0   # attainment % → Level 3 (Excellent)
-LEVEL_2_THRESHOLD      = 50.0   # attainment % → Level 2 (Satisfactory)
-                                 # below 50%   → Level 1 (Needs Improvement)
+ATTAINMENT_THRESHOLD   = 0.60   # Student must score >= 60% to "attain" a CLO
+CLASS_PASS_THRESHOLD   = 0.60   # 60% of class must attain for CLO to be "met"
+LEVEL_3_THRESHOLD      = 70.0   # Attainment % → Level 3 (Excellent)
+LEVEL_2_THRESHOLD      = 50.0   # Attainment % → Level 2 (Satisfactory)
 
-# ── Helper ────────────────────────────────────
-
+# ── Helpers ───────────────────────────────────
 def get_level(pct: float) -> int:
-    if pct >= LEVEL_3_THRESHOLD:
-        return 3
-    elif pct >= LEVEL_2_THRESHOLD:
-        return 2
+    if pct >= LEVEL_3_THRESHOLD: return 3
+    elif pct >= LEVEL_2_THRESHOLD: return 2
     return 1
 
 def get_level_label(level: int) -> str:
     return {3: "Excellent", 2: "Satisfactory", 1: "Needs Improvement"}.get(level, "Unknown")
 
-# ── Core Engine ───────────────────────────────
-
-def compute_co_attainment(course_id: int, db: Session) -> list:
-    """
-    For each CO in a course:
-    1. Find all assessments mapped to that CO
-    2. For each student, sum their obtained vs max marks across those assessments
-    3. Count how many students scored >= 60%
-    4. Attainment % = (passing students / total students) * 100
-    """
-    cos = db.query(CourseOutcome).filter(
-        CourseOutcome.course_id == course_id
-    ).all()
-
-    if not cos:
-        return []
-
+# ── 1. CLO Attainment (Class Level) ───────────
+def compute_clo_attainment(course_id: int, db: Session) -> list:
+    """Computes overall CLO attainment for a course across all students."""
+    clos = db.query(CourseLearningOutcome).filter(CourseLearningOutcome.course_id == course_id).all()
     results = []
 
-    for co in cos:
-        # Get all assessments mapped to this CO
-        assessments = db.query(Assessment).filter(
-            Assessment.course_id   == course_id,
-            Assessment.mapped_co_id == co.id
-        ).all()
-
+    for clo in clos:
+        assessments = db.query(Assessment).filter(Assessment.mapped_clo_id == clo.id).all()
         if not assessments:
-            results.append({
-                "co":             co.co_number,
-                "co_id":          co.id,
-                "description":    co.description,
-                "bloom_level":    co.bloom_level,
-                "attainment_pct": 0.0,
-                "level":          1,
-                "level_label":    "Needs Improvement",
-                "threshold_met":  False,
-                "total_students": 0,
-                "passing_students": 0,
-            })
+            continue
+            
+        assessment_ids = [a.id for a in assessments]
+        
+        # Split DIU Assessment Patterns: Continuous (CA) vs Summative (SEE)
+        ca_marks = sum(a.max_marks for a in assessments if a.type != "final")
+        see_marks = sum(a.max_marks for a in assessments if a.type == "final")
+        total_max_marks = ca_marks + see_marks
+
+        marks = db.query(StudentMark).filter(StudentMark.assessment_id.in_(assessment_ids)).all()
+        
+        student_totals = defaultdict(float)
+        for m in marks:
+            student_totals[m.student_id] += m.obtained
+
+        total_students = len(student_totals)
+        if total_students == 0:
             continue
 
-        a_ids = [a.id for a in assessments]
-
-        # Get all marks for these assessments
-        all_marks = db.query(StudentMark).filter(
-            StudentMark.assessment_id.in_(a_ids)
-        ).all()
-
-        if not all_marks:
-            continue
-
-        # Group marks by student
-        student_obtained = defaultdict(float)
-        student_max      = defaultdict(float)
-
-        for mark in all_marks:
-            assessment = next(a for a in assessments if a.id == mark.assessment_id)
-            student_obtained[mark.student_id] += mark.obtained
-            student_max[mark.student_id]      += assessment.max_marks
-
-        total_students  = len(student_obtained)
-        passing_students = sum(
-            1 for sid in student_obtained
-            if student_max[sid] > 0 and
-               (student_obtained[sid] / student_max[sid]) >= ATTAINMENT_THRESHOLD
-        )
-
-        attainment_pct = round(
-            (passing_students / total_students * 100) if total_students > 0 else 0.0,
-            2
-        )
+        passed_students = sum(1 for score in student_totals.values() if (score / total_max_marks) >= ATTAINMENT_THRESHOLD)
+        
+        attainment_pct = (passed_students / total_students) * 100
         level = get_level(attainment_pct)
 
         results.append({
-            "co":               co.co_number,
-            "co_id":            co.id,
-            "description":      co.description,
-            "bloom_level":      co.bloom_level,
-            "attainment_pct":   attainment_pct,
-            "level":            level,
-            "level_label":      get_level_label(level),
-            "threshold_met":    attainment_pct >= (CLASS_PASS_THRESHOLD * 100),
-            "total_students":   total_students,
-            "passing_students": passing_students,
+            "clo_id": clo.id,
+            "clo_number": clo.clo_number,
+            "description": clo.description,
+            "bloom_level": clo.bloom_level,
+            "knowledge_profile": clo.knowledge_profile,
+            "domain": clo.domain,
+            "total_marks": total_max_marks,
+            "ca_weight": ca_marks,
+            "see_weight": see_marks,
+            "total_students": total_students,
+            "passed_students": passed_students,
+            "attainment_pct": round(attainment_pct, 2),
+            "level": level,
+            "level_label": get_level_label(level),
+            "threshold_met": (passed_students / total_students) >= CLASS_PASS_THRESHOLD
         })
 
     return results
 
-
-def compute_po_attainment(program_id: int, db: Session) -> list:
-    """
-    For each PO in a program:
-    Aggregate attainment from all COs mapped to it,
-    weighted by the CO-PO mapping weight.
-    """
-    pos = db.query(ProgramOutcome).filter(
-        ProgramOutcome.program_id == program_id
-    ).all()
-
-    if not pos:
-        return []
-
-    # Get all courses in this program
-    courses = db.query(Course).filter(
-        Course.program_id == program_id
-    ).all()
+# ── 2. PLO Attainment (Program Level) ─────────
+def compute_plo_attainment(program_id: int, db: Session) -> list:
+    """Rolls up CLO attainments into Program Learning Outcomes (PLOs) based on mapping correlation."""
+    plos = db.query(ProgramOutcome).filter(ProgramOutcome.program_id == program_id).all()
+    courses = db.query(Course).filter(Course.program_id == program_id).all()
+    
+    # Precompute all CLO attainments in the program
+    all_clo_attainments = {}
+    for course in courses:
+        course_clos = compute_clo_attainment(course.id, db)
+        for c in course_clos:
+            all_clo_attainments[c["clo_id"]] = c["attainment_pct"]
 
     results = []
-
-    for po in pos:
-        # Get all CO-PO mappings for this PO
-        mappings = db.query(COPOMapping).filter(
-            COPOMapping.po_id == po.id
-        ).all()
-
-        if not mappings:
-            results.append({
-                "po":             po.po_number,
-                "po_id":          po.id,
-                "description":    po.description,
-                "attainment_pct": 0.0,
-                "level":          1,
-                "level_label":    "Needs Improvement",
-                "threshold_met":  False,
-            })
-            continue
-
-        weighted_sum  = 0.0
-        total_weight  = 0.0
-
+    for plo in plos:
+        mappings = db.query(CLOPLOMapping).filter(CLOPLOMapping.po_id == plo.id).all()
+        
+        total_weighted_score = 0.0
+        total_weight = 0.0
+        
         for mapping in mappings:
-            co = db.query(CourseOutcome).filter(
-                CourseOutcome.id == mapping.co_id
-            ).first()
-            if not co:
-                continue
-
-            # Get CO attainment for the course this CO belongs to
-            co_results = compute_co_attainment(co.course_id, db)
-            co_result  = next(
-                (r for r in co_results if r["co_id"] == co.id), None
-            )
-            if co_result:
-                weighted_sum  += co_result["attainment_pct"] * mapping.weight
-                total_weight  += mapping.weight
-
-        attainment_pct = round(
-            weighted_sum / total_weight if total_weight > 0 else 0.0,
-            2
-        )
-        level = get_level(attainment_pct)
-
+            clo_pct = all_clo_attainments.get(mapping.clo_id)
+            if clo_pct is not None:
+                # Weight by correlation: 1 (Low), 2 (Medium), 3 (High)
+                correlation_weight = mapping.correlation / 3.0
+                total_weighted_score += (clo_pct * correlation_weight)
+                total_weight += correlation_weight
+                
+        plo_attainment = (total_weighted_score / total_weight) if total_weight > 0 else 0.0
+        level = get_level(plo_attainment)
+        
         results.append({
-            "po":             po.po_number,
-            "po_id":          po.id,
-            "description":    po.description,
-            "attainment_pct": attainment_pct,
-            "level":          level,
-            "level_label":    get_level_label(level),
-            "threshold_met":  attainment_pct >= (CLASS_PASS_THRESHOLD * 100),
+            "plo_id": plo.id,
+            "plo_number": plo.po_number,
+            "description": plo.description,
+            "attainment_pct": round(plo_attainment, 2),
+            "level": level,
+            "level_label": get_level_label(level),
+            "contributing_clos": len(mappings)
         })
-
+        
     return results
 
-
-def get_student_co_breakdown(student_id: int, course_id: int, db: Session) -> list:
-    """
-    For a single student — show their score on each CO
-    so they can see exactly where they are weak.
-    """
-    cos = db.query(CourseOutcome).filter(
-        CourseOutcome.course_id == course_id
-    ).all()
-
-    results = []
-
-    for co in cos:
-        assessments = db.query(Assessment).filter(
-            Assessment.course_id    == course_id,
-            Assessment.mapped_co_id == co.id
-        ).all()
-
-        if not assessments:
-            continue
-
-        a_ids = [a.id for a in assessments]
-        marks = db.query(StudentMark).filter(
-            StudentMark.student_id.in_([student_id]),
-            StudentMark.assessment_id.in_(a_ids)
-        ).all()
-
-        obtained = sum(m.obtained for m in marks)
+# ── 3. Student-Level Breakdown ────────────────
+def get_student_clo_breakdown(course_id: int, student_id: int, db: Session) -> dict:
+    """Calculates exact CLO attainment for an individual student (for portfolios)."""
+    student = db.query(User).filter(User.id == student_id).first()
+    clos = db.query(CourseLearningOutcome).filter(CourseLearningOutcome.course_id == course_id).all()
+    
+    breakdown = []
+    total_course_marks = 0
+    total_obtained = 0
+    
+    for clo in clos:
+        assessments = db.query(Assessment).filter(Assessment.mapped_clo_id == clo.id).all()
+        assessment_ids = [a.id for a in assessments]
+        
         max_marks = sum(a.max_marks for a in assessments)
-        pct = round((obtained / max_marks * 100) if max_marks > 0 else 0.0, 2)
-
-        results.append({
-            "co":          co.co_number,
-            "description": co.description,
-            "bloom_level": co.bloom_level,
-            "obtained":    obtained,
-            "max_marks":   max_marks,
-            "percentage":  pct,
-            "attained":    pct >= (ATTAINMENT_THRESHOLD * 100),
+        marks = db.query(StudentMark).filter(
+            StudentMark.assessment_id.in_(assessment_ids),
+            StudentMark.student_id == student_id
+        ).all()
+        
+        obtained_marks = sum(m.obtained for m in marks)
+        total_course_marks += max_marks
+        total_obtained += obtained_marks
+        
+        pct = (obtained_marks / max_marks * 100) if max_marks > 0 else 0.0
+        
+        breakdown.append({
+            "clo_number": clo.clo_number,
+            "description": clo.description,
+            "max_marks": max_marks,
+            "obtained_marks": round(obtained_marks, 2),
+            "percentage": round(pct, 2),
+            "status": "Attained" if pct >= (ATTAINMENT_THRESHOLD * 100) else "Not Attained"
         })
+        
+    return {
+        "student_name": student.name,
+        "student_id": student.id,
+        "total_percentage": round((total_obtained / total_course_marks * 100) if total_course_marks > 0 else 0, 2),
+        "clos": breakdown
+    }
 
-    return results
-
-
+# ── 4. Course Summary ─────────────────────────
 def get_course_summary(course_id: int, db: Session) -> dict:
-    """
-    High level summary of a course —
-    used for the dean dashboard overview card.
-    """
     course = db.query(Course).filter(Course.id == course_id).first()
-    if not course:
-        return {}
+    if not course: return {}
 
-    co_results     = compute_co_attainment(course_id, db)
-    total_cos      = len(co_results)
-    met_cos        = sum(1 for r in co_results if r["threshold_met"])
-    avg_attainment = round(
-        sum(r["attainment_pct"] for r in co_results) / total_cos
-        if total_cos > 0 else 0.0,
-        2
-    )
+    # 1. Existing Math
+    clo_results = compute_clo_attainment(course_id, db)
+    total_clos = len(clo_results)
+    met_clos = sum(1 for r in clo_results if r["attainment_pct"] >= 60.0)
+    avg_attainment = round(sum(r["attainment_pct"] for r in clo_results) / total_clos if total_clos > 0 else 0.0, 2)
 
-    # Count students enrolled
-    assessments = db.query(Assessment).filter(
-        Assessment.course_id == course_id
-    ).first()
-    student_count = 0
-    if assessments:
-        student_count = db.query(StudentMark.student_id).filter(
-            StudentMark.assessment_id == assessments.id
-        ).distinct().count()
+    # 2. Get All Assessments (for Table Headers)
+    assessments = db.query(Assessment).filter(Assessment.course_id == course_id).order_by(Assessment.id).all()
+    assessment_list = [{"id": a.id, "title": a.title, "max_marks": a.max_marks} for a in assessments]
+
+    # 3. Get Students and their Marks (for Table Rows)
+    # We find all students who have at least one mark in this course
+    student_ids = db.query(StudentMark.student_id).filter(
+        StudentMark.assessment_id.in_([a.id for a in assessments])
+    ).distinct().all()
+    
+    student_list = []
+    for (s_id,) in student_ids:
+        student_user = db.query(User).filter(User.id == s_id).first()
+        if not student_user: continue
+
+        # Get marks for this specific student
+        marks = db.query(StudentMark).filter(
+            StudentMark.student_id == s_id,
+            StudentMark.assessment_id.in_([a.id for a in assessments])
+        ).all()
+
+        # Create a map of {assessment_id: obtained_marks}
+        marks_map = {m.assessment_id: float(m.obtained) for m in marks}
+        
+        # Calculate total percentage for this student
+        total_obtained = sum(marks_map.values())
+        total_possible = sum(a.max_marks for a in assessments)
+        percentage = (total_obtained / total_possible * 100) if total_possible > 0 else 0
+
+        student_list.append({
+            "id": s_id,
+            "name": student_user.name,
+            "student_id_no": getattr(student_user, 'student_id_no', f"ID-{s_id}"),
+            "marks": marks_map,
+            "total_percentage": round(percentage, 2)
+        })
 
     return {
-        "course_id":       course.id,
-        "course_code":     course.code,
-        "course_name":     course.name,
-        "semester":        course.semester,
-        "total_cos":       total_cos,
-        "cos_met":         met_cos,
-        "cos_not_met":     total_cos - met_cos,
-        "avg_attainment":  avg_attainment,
-        "student_count":   student_count,
-        "health":          "Good" if met_cos == total_cos
-                           else ("Warning" if met_cos >= total_cos / 2
-                           else "Critical"),
+        "course_id": course.id,
+        "course_code": course.code,
+        "course_name": course.name,
+        "total_clos": total_clos,
+        "met_clos": met_clos,
+        "avg_attainment": avg_attainment,
+        "student_count": len(student_list),
+        "assessments": assessment_list, # The UI needs this for headers!
+        "students": student_list        # The UI needs this for rows!
     }

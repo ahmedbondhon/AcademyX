@@ -53,8 +53,10 @@ async def upload_marksheet(
         "status":  "preview" if not save else "validation_failed",
         "summary": result["summary"],
         "valid":   result["valid"],
-        "errors":  result["errors"][:10],  # show max 10 errors
-        "preview": result["rows"][:5],     # show first 5 valid rows
+        "errors":  result["errors"][:10],  
+        "preview": result["rows"][:5],     
+        "rows":    result["rows"],         # Add this line for the UI Table
+        "data":    result["rows"],         # Add this line as a fallback
     }
 
 

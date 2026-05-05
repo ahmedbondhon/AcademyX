@@ -2,8 +2,7 @@ from pydantic import BaseModel, EmailStr
 from typing import Optional, List
 from datetime import datetime
 
-# ── Auth Schemas (unchanged) ──────────────────
-
+# ── Auth Schemas ──────────────────────────────
 class UserRegister(BaseModel):
     name: str
     email: EmailStr
@@ -39,9 +38,7 @@ class DepartmentOut(BaseModel):
     id: int
     name: str
     code: str
-
-    class Config:
-        from_attributes = True
+    class Config: from_attributes = True
 
 class CourseOut(BaseModel):
     id: int
@@ -50,19 +47,17 @@ class CourseOut(BaseModel):
     semester: str
     program_id: int
     faculty_id: int
+    class Config: from_attributes = True
 
-    class Config:
-        from_attributes = True
-
-class CourseOutcomeOut(BaseModel):
+class CourseLearningOutcomeOut(BaseModel): # Renamed
     id: int
     course_id: int
-    co_number: str
+    clo_number: str
     description: str
-    bloom_level: str
-
-    class Config:
-        from_attributes = True
+    bloom_level: Optional[str]
+    knowledge_profile: Optional[str]
+    domain: Optional[str]
+    class Config: from_attributes = True
 
 class AssessmentOut(BaseModel):
     id: int
@@ -70,11 +65,9 @@ class AssessmentOut(BaseModel):
     title: str
     type: str
     max_marks: float
-    mapped_co_id: int
+    mapped_clo_id: int # Renamed
     week: int
-
-    class Config:
-        from_attributes = True
+    class Config: from_attributes = True
 
 class StudentMarkOut(BaseModel):
     id: int
@@ -82,20 +75,4 @@ class StudentMarkOut(BaseModel):
     assessment_id: int
     obtained: float
     submitted_at: datetime
-
-    class Config:
-        from_attributes = True
-
-class COAttainmentResult(BaseModel):
-    co: str
-    description: str
-    attainment_pct: float
-    level: int
-    threshold_met: bool
-
-class RiskResult(BaseModel):
-    student_id: int
-    student_name: str
-    risk_score: float
-    risk_level: str
-    at_risk_cos: List[str]
+    class Config: from_attributes = True

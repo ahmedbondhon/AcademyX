@@ -1,0 +1,78 @@
+course_code (reference),student_id,student_name (reference),assessment_id,assessment_name (reference),max_marks (reference),obtained_marks
+CSE301,3,Alice Ahmed,1,Quiz 1 - Arrays,10.0,7.3
+CSE301,3,Alice Ahmed,2,Quiz 2 - Linked Lists,10.0,6.9
+CSE301,3,Alice Ahmed,3,Assignment 1 - Big-O,20.0,12.5
+CSE301,3,Alice Ahmed,4,Midterm Exam,30.0,20.4
+CSE301,3,Alice Ahmed,5,Assignment 2 - Sorting,20.0,15.4
+CSE301,3,Alice Ahmed,6,Quiz 3 - Trees,10.0,6.4
+CSE301,3,Alice Ahmed,7,Final Exam,40.0,24.8
+CSE301,4,Bob Hassan,1,Quiz 1 - Arrays,10.0,7.9
+CSE301,4,Bob Hassan,2,Quiz 2 - Linked Lists,10.0,6.5
+CSE301,4,Bob Hassan,3,Assignment 1 - Big-O,20.0,14.0
+CSE301,4,Bob Hassan,4,Midterm Exam,30.0,22.5
+CSE301,4,Bob Hassan,5,Assignment 2 - Sorting,20.0,12.3
+CSE301,4,Bob Hassan,6,Quiz 3 - Trees,10.0,6.7
+CSE301,4,Bob Hassan,7,Final Exam,40.0,28.7
+CSE301,5,Carol Islam,1,Quiz 1 - Arrays,10.0,7.8
+CSE301,5,Carol Islam,2,Quiz 2 - Linked Lists,10.0,7.5
+CSE301,5,Carol Islam,3,Assignment 1 - Big-O,20.0,14.9
+CSE301,5,Carol Islam,4,Midterm Exam,30.0,20.8
+CSE301,5,Carol Islam,5,Assignment 2 - Sorting,20.0,13.4
+CSE301,5,Carol Islam,6,Quiz 3 - Trees,10.0,7.9
+CSE301,5,Carol Islam,7,Final Exam,40.0,30.7
+CSE301,6,David Khan,1,Quiz 1 - Arrays,10.0,6.2
+CSE301,6,David Khan,2,Quiz 2 - Linked Lists,10.0,6.8
+CSE301,6,David Khan,3,Assignment 1 - Big-O,20.0,12.7
+CSE301,6,David Khan,4,Midterm Exam,30.0,19.1
+CSE301,6,David Khan,5,Assignment 2 - Sorting,20.0,14.3
+CSE301,6,David Khan,6,Quiz 3 - Trees,10.0,6.9
+CSE301,6,David Khan,7,Final Exam,40.0,30.0
+CSE301,7,Eva Rahman,1,Quiz 1 - Arrays,10.0,7.7
+CSE301,7,Eva Rahman,2,Quiz 2 - Linked Lists,10.0,6.5
+CSE301,7,Eva Rahman,3,Assignment 1 - Big-O,20.0,14.6
+CSE301,7,Eva Rahman,4,Midterm Exam,30.0,19.8
+CSE301,7,Eva Rahman,5,Assignment 2 - Sorting,20.0,13.1
+CSE301,7,Eva Rahman,6,Quiz 3 - Trees,10.0,6.1
+CSE301,7,Eva Rahman,7,Final Exam,40.0,29.3
+CSE301,8,Farhan Uddin,1,Quiz 1 - Arrays,10.0,6.5
+CSE301,8,Farhan Uddin,2,Quiz 2 - Linked Lists,10.0,6.2
+CSE301,8,Farhan Uddin,3,Assignment 1 - Big-O,20.0,15.1
+CSE301,8,Farhan Uddin,4,Midterm Exam,30.0,19.2
+CSE301,8,Farhan Uddin,5,Assignment 2 - Sorting,20.0,12.3
+CSE301,8,Farhan Uddin,6,Quiz 3 - Trees,10.0,6.6
+CSE301,8,Farhan Uddin,7,Final Exam,40.0,29.1
+CSE301,9,Gita Begum,1,Quiz 1 - Arrays,10.0,7.2
+CSE301,9,Gita Begum,2,Quiz 2 - Linked Lists,10.0,8.0
+CSE301,9,Gita Begum,3,Assignment 1 - Big-O,20.0,13.0
+CSE301,9,Gita Begum,4,Midterm Exam,30.0,23.7
+CSE301,9,Gita Begum,5,Assignment 2 - Sorting,20.0,15.0
+CSE301,9,Gita Begum,6,Quiz 3 - Trees,10.0,6.1
+CSE301,9,Gita Begum,7,Final Exam,40.0,30.3
+CSE301,10,Hasan Ali,1,Quiz 1 - Arrays,10.0,7.7
+CSE301,10,Hasan Ali,2,Quiz 2 - Linked Lists,10.0,6.1
+CSE301,10,Hasan Ali,3,Assignment 1 - Big-O,20.0,15.1
+CSE301,10,Hasan Ali,4,Midterm Exam,30.0,23.7
+CSE301,10,Hasan Ali,5,Assignment 2 - Sorting,20.0,12.4
+CSE301,10,Hasan Ali,6,Quiz 3 - Trees,10.0,6.6
+CSE301,10,Hasan Ali,7,Final Exam,40.0,29.6
+CSE301,11,Irfan Molla,1,Quiz 1 - Arrays,10.0,7.1
+CSE301,11,Irfan Molla,2,Quiz 2 - Linked Lists,10.0,7.7
+CSE301,11,Irfan Molla,3,Assignment 1 - Big-O,20.0,14.7
+CSE301,11,Irfan Molla,4,Midterm Exam,30.0,23.3
+CSE301,11,Irfan Molla,5,Assignment 2 - Sorting,20.0,14.6
+CSE301,11,Irfan Molla,6,Quiz 3 - Trees,10.0,6.4
+CSE301,11,Irfan Molla,7,Final Exam,40.0,28.7
+CSE301,12,Joya Sultana,1,Quiz 1 - Arrays,10.0,6.3
+CSE301,12,Joya Sultana,2,Quiz 2 - Linked Lists,10.0,7.8
+CSE301,12,Joya Sultana,3,Assignment 1 - Big-O,20.0,12.9
+CSE301,12,Joya Sultana,4,Midterm Exam,30.0,21.7
+CSE301,12,Joya Sultana,5,Assignment 2 - Sorting,20.0,12.1
+CSE301,12,Joya Sultana,6,Quiz 3 - Trees,10.0,7.8
+CSE301,12,Joya Sultana,7,Final Exam,40.0,26.1
+CSE301,13,Test Student,1,Quiz 1 - Arrays,10.0,7.4
+CSE301,13,Test Student,2,Quiz 2 - Linked Lists,10.0,7.9
+CSE301,13,Test Student,3,Assignment 1 - Big-O,20.0,15.3
+CSE301,13,Test Student,4,Midterm Exam,30.0,20.0
+CSE301,13,Test Student,5,Assignment 2 - Sorting,20.0,14.4
+CSE301,13,Test Student,6,Quiz 3 - Trees,10.0,6.4
+CSE301,13,Test Student,7,Final Exam,40.0,26.2

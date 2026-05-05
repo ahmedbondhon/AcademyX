@@ -16,7 +16,7 @@ def download_obe_report(
     current_user: dict = Depends(get_current_user)
 ):
     """
-    Generate and download a full OBE PDF report for a course.
+    Generate and download a full UGC-formatted OBE PDF report for a course.
     """
     course = db.query(Course).filter(Course.id == course_id).first()
     if not course:
@@ -30,12 +30,12 @@ def download_obe_report(
             detail=f"Report generation failed: {str(e)}"
         )
 
-    filename = (
-        f"OBE_Report_{course.code}_{course.semester.replace(' ', '_')}.pdf"
-    )
+    # Sanitize semester for filename
+    safe_semester = course.semester.replace(" ", "_").replace("/", "_")
+    filename = f"UGC_OBE_Report_{course.code}_{safe_semester}.pdf"
 
     return StreamingResponse(
         io.BytesIO(pdf_bytes),
         media_type="application/pdf",
-        headers={"Content-Disposition": f"attachment; filename={filename}"}
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'}
     )
