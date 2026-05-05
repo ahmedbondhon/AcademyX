@@ -54,22 +54,16 @@ def compute_clo_attainment(course_id: int, db: Session) -> list:
         level = get_level(attainment_pct)
 
         results.append({
-            "clo_id": clo.id,
-            "clo_number": clo.clo_number,
-            "description": clo.description,
-            "bloom_level": clo.bloom_level,
-            "knowledge_profile": clo.knowledge_profile,
-            "domain": clo.domain,
-            "total_marks": total_max_marks,
-            "ca_weight": ca_marks,
-            "see_weight": see_marks,
-            "total_students": total_students,
-            "passed_students": passed_students,
-            "attainment_pct": round(attainment_pct, 2),
-            "level": level,
-            "level_label": get_level_label(level),
-            "threshold_met": (passed_students / total_students) >= CLASS_PASS_THRESHOLD
-        })
+    "clo_id": clo.id,
+    "co": clo.clo_number,             # Changed from clo_number
+    "description": clo.description,
+    "bloom_level": clo.bloom_level,
+    # ... keep others ...
+    "total_students": total_students,
+    "passing_students": passed_students, # Changed from passed_students
+    "attainment_pct": round(attainment_pct, 2),
+    "threshold_met": (passed_students / total_students) >= CLASS_PASS_THRESHOLD
+})
 
     return results
 
@@ -142,78 +136,60 @@ def get_student_clo_breakdown(course_id: int, student_id: int, db: Session) -> d
         
         pct = (obtained_marks / max_marks * 100) if max_marks > 0 else 0.0
         
-        breakdown.append({
-            "clo_number": clo.clo_number,
-            "description": clo.description,
-            "max_marks": max_marks,
-            "obtained_marks": round(obtained_marks, 2),
-            "percentage": round(pct, 2),
-            "status": "Attained" if pct >= (ATTAINMENT_THRESHOLD * 100) else "Not Attained"
-        })
-        
+        # Inside the loop in get_student_clo_breakdown
+    breakdown.append({
+    "co": clo.clo_number,           # Changed from clo_number
+    "description": clo.description,
+    "max_marks": max_marks,
+    "obtained": round(obtained_marks, 2), # Changed from obtained_marks
+    "percentage": round(pct, 2),
+    "attained": pct >= (ATTAINMENT_THRESHOLD * 100) # Changed from status
+})
+
+# Final return at the end of the function
     return {
-        "student_name": student.name,
-        "student_id": student.id,
-        "total_percentage": round((total_obtained / total_course_marks * 100) if total_course_marks > 0 else 0, 2),
-        "clos": breakdown
-    }
+    "student_name": student.name,
+    "student_id": student.id,
+    "total_percentage": round((total_obtained / total_course_marks * 100) if total_course_marks > 0 else 0, 2),
+    "breakdown": breakdown # Changed from "clos" to "breakdown"
+}
 
 # ── 4. Course Summary ─────────────────────────
 def get_course_summary(course_id: int, db: Session) -> dict:
     course = db.query(Course).filter(Course.id == course_id).first()
     if not course: return {}
 
-    # 1. Existing Math
     clo_results = compute_clo_attainment(course_id, db)
     total_clos = len(clo_results)
-    met_clos = sum(1 for r in clo_results if r["attainment_pct"] >= 60.0)
+    met_clos = sum(1 for r in clo_results if r["threshold_met"])
     avg_attainment = round(sum(r["attainment_pct"] for r in clo_results) / total_clos if total_clos > 0 else 0.0, 2)
 
-    # 2. Get All Assessments (for Table Headers)
-    assessments = db.query(Assessment).filter(Assessment.course_id == course_id).order_by(Assessment.id).all()
-    assessment_list = [{"id": a.id, "title": a.title, "max_marks": a.max_marks} for a in assessments]
-
-    # 3. Get Students and their Marks (for Table Rows)
-    # We find all students who have at least one mark in this course
+    assessments = db.query(Assessment).filter(Assessment.course_id == course_id).all()
+    
+    # NEW: Prepare data for the Frontend Table
+    assessment_list = [{"id": a.id, "title": a.title, "max": a.max_marks} for a in assessments]
+    
     student_ids = db.query(StudentMark.student_id).filter(
         StudentMark.assessment_id.in_([a.id for a in assessments])
     ).distinct().all()
     
-    student_list = []
-    for (s_id,) in student_ids:
-        student_user = db.query(User).filter(User.id == s_id).first()
-        if not student_user: continue
-
-        # Get marks for this specific student
-        marks = db.query(StudentMark).filter(
-            StudentMark.student_id == s_id,
-            StudentMark.assessment_id.in_([a.id for a in assessments])
-        ).all()
-
-        # Create a map of {assessment_id: obtained_marks}
-        marks_map = {m.assessment_id: float(m.obtained) for m in marks}
-        
-        # Calculate total percentage for this student
-        total_obtained = sum(marks_map.values())
-        total_possible = sum(a.max_marks for a in assessments)
-        percentage = (total_obtained / total_possible * 100) if total_possible > 0 else 0
-
-        student_list.append({
-            "id": s_id,
-            "name": student_user.name,
-            "student_id_no": getattr(student_user, 'student_id_no', f"ID-{s_id}"),
-            "marks": marks_map,
-            "total_percentage": round(percentage, 2)
+    students_data = []
+    for (sid,) in student_ids:
+        user = db.query(User).filter(User.id == sid).first()
+        marks = db.query(StudentMark).filter(StudentMark.student_id == sid).all()
+        marks_map = {m.assessment_id: m.obtained for m in marks}
+        students_data.append({
+            "id": sid,
+            "name": user.name,
+            "marks": marks_map
         })
 
     return {
         "course_id": course.id,
         "course_code": course.code,
         "course_name": course.name,
-        "total_clos": total_clos,
-        "met_clos": met_clos,
+        "student_count": len(students_data),
         "avg_attainment": avg_attainment,
-        "student_count": len(student_list),
-        "assessments": assessment_list, # The UI needs this for headers!
-        "students": student_list        # The UI needs this for rows!
+        "assessments": assessment_list, # NEEDED FOR COLUMNS
+        "students": students_data       # NEEDED FOR ROWS
     }
