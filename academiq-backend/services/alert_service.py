@@ -272,7 +272,7 @@ def trigger_course_alerts(
             course_name  = course.name,
             risk_level   = student_data["risk_level"],
             risk_pct     = student_data["risk_pct"],
-            at_risk_cos  = student_data["at_risk_cos"],
+            at_risk_cos = student_data.get("at_risk_cos", []),
             early_pct    = student_data["early_pct"],
         )
 

@@ -46,6 +46,26 @@ def generate_obe_report(course_id: int, db: Session) -> bytes:
     see_marks = sum(a.max_marks for a in assessments if a.type == "final")
     total_marks = ca_marks + see_marks
 
+    # ── SAFE AI RISK GATHERING ────────────────────
+    try:
+        from ml.ml_predictor import predict_course_risk
+        risk_response = predict_course_risk(course_id, db)
+        # Handle both list and dictionary responses safely
+        if isinstance(risk_response, dict):
+            risk_data = risk_response.get("students", [])
+        else:
+            risk_data = risk_response if isinstance(risk_response, list) else []
+            
+        high_risk = sum(1 for s in risk_data if s.get("risk_score", 0) > 70)
+        moderate_risk = sum(1 for s in risk_data if 40 < s.get("risk_score", 0) <= 70)
+        total_risk_students = len(risk_data)
+        ai_status = "Success"
+    except Exception as e:
+        print(f"Report Warning: Could not include ML risk data: {e}")
+        risk_data = []
+        high_risk, moderate_risk, total_risk_students = 0, 0, 0
+        ai_status = "Unavailable"
+
     buffer = io.BytesIO()
     doc = SimpleDocTemplate(
         buffer, pagesize=A4,
@@ -179,6 +199,28 @@ def generate_obe_report(course_id: int, db: Session) -> bytes:
     res_table = Table(result_data, colWidths=[2.5*cm, 2.5*cm, 3*cm, 3*cm, 3*cm, 3*cm])
     res_table.setStyle(result_style)
     content.append(res_table)
+    
+    # ── Part D: AI Risk Prediction ───────────────
+    content.append(Paragraph("<b>Part D: AI Risk Prediction Summary</b>", heading_style))
+    if ai_status == "Success" and total_risk_students > 0:
+        risk_summary_data = [
+            ["Total Evaluated", "High Risk (>70%)", "Moderate Risk (41-70%)"],
+            [str(total_risk_students), str(high_risk), str(moderate_risk)]
+        ]
+        risk_table = Table(risk_summary_data, colWidths=[5.5*cm, 5.5*cm, 6*cm])
+        risk_table.setStyle(TableStyle([
+            ("BACKGROUND", (0, 0), (-1, 0), GRAY),
+            ("TEXTCOLOR", (0, 0), (-1, 0), WHITE),
+            ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+            ("ALIGN", (0, 0), (-1, -1), "CENTER"),
+            ("GRID", (0, 0), (-1, -1), 0.5, LIGHT_GRAY),
+            ("PADDING", (0, 0), (-1, -1), 6),
+            ("TEXTCOLOR", (1, 1), (1, 1), RED), # Highlight High Risk count
+        ]))
+        content.append(risk_table)
+    else:
+        content.append(Paragraph("<i>AI Risk prediction data is currently unavailable or insufficient for this course.</i>", normal_style))
+
 
     # ── Footer ───────────────────────────────────
     content.append(Spacer(1, 2*cm))

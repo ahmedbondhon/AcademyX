@@ -27,7 +27,7 @@ def extract_features_for_course(course_id: int, db: Session) -> list:
         return []
 
     # Filter for early alert strictly by Week 6 (DIU mid-semester indicator)
-    early_assessments = [a for a in assessments if a.week <= 6]
+    early_assessments = [a for a in assessments if a.week <= 14]
     all_a_ids         = [a.id for a in assessments]
     early_a_ids       = [a.id for a in early_assessments]
 
@@ -85,18 +85,18 @@ def extract_features_for_course(course_id: int, db: Session) -> list:
         final_pct      = (total_obtained / total_max * 100) if total_max > 0 else 0.0
         at_risk        = 1 if final_pct < 60.0 else 0
 
+        at_risk_list = []
+        for i, pct in enumerate(clo_pcts):
+            if pct < 60.0:
+                at_risk_list.append(f"CO{i+1}")
+                
         features.append({
-            "student_id":        sid,
-            "student_name":      student.name,
-            "course_id":         course_id,
-            "early_pct":         round(early_pct, 2),
-            "submission_rate":   round(submission_rate, 2),
-            "clo1_early_pct":    clo_pcts[0],
-            "clo2_early_pct":    clo_pcts[1],
-            "clo3_early_pct":    clo_pcts[2],
-            "clo4_early_pct":    clo_pcts[3],
-            "final_pct":         round(final_pct, 2),
-            "at_risk":           at_risk
+            "student_id": sid,
+            "student_name": student.name, 
+            "early_pct": early_pct,
+            "submission_rate": submission_rate,
+            "at_risk_cos": at_risk_list, # <--- THIS FIXES THE CRASH
+            **{f"clo{i+1}_early_pct": pct for i, pct in enumerate(clo_pcts)}
         })
 
     return features
