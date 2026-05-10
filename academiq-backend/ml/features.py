@@ -95,7 +95,8 @@ def extract_features_for_course(course_id: int, db: Session) -> list:
             "student_name": student.name, 
             "early_pct": early_pct,
             "submission_rate": submission_rate,
-            "at_risk_cos": at_risk_list, # <--- THIS FIXES THE CRASH
+            "at_risk": at_risk,           # <--- ADD THIS LINE
+            "at_risk_cos": at_risk_list, 
             **{f"clo{i+1}_early_pct": pct for i, pct in enumerate(clo_pcts)}
         })
 
