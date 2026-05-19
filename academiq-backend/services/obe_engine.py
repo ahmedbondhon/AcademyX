@@ -54,16 +54,16 @@ def compute_clo_attainment(course_id: int, db: Session) -> list:
         level = get_level(attainment_pct)
 
         results.append({
-    "clo_id": clo.id,
-    "co": clo.clo_number,             # Changed from clo_number
-    "description": clo.description,
-    "bloom_level": clo.bloom_level,
-    # ... keep others ...
-    "total_students": total_students,
-    "passing_students": passed_students, # Changed from passed_students
-    "attainment_pct": round(attainment_pct, 2),
-    "threshold_met": (passed_students / total_students) >= CLASS_PASS_THRESHOLD
-})
+            "clo_id": clo.id,
+            "clo_number": clo.clo_number,
+            "description": clo.description,
+            "bloom_level": clo.bloom_level,
+            "total_students": total_students,
+            "passed_students": passed_students,
+            "total_marks": total_max_marks,
+            "attainment_pct": round(attainment_pct, 2),
+            "threshold_met": (passed_students / total_students) >= CLASS_PASS_THRESHOLD
+        })
 
     return results
 
@@ -136,23 +136,21 @@ def get_student_clo_breakdown(course_id: int, student_id: int, db: Session) -> d
         
         pct = (obtained_marks / max_marks * 100) if max_marks > 0 else 0.0
         
-        # Inside the loop in get_student_clo_breakdown
-    breakdown.append({
-    "co": clo.clo_number,           # Changed from clo_number
-    "description": clo.description,
-    "max_marks": max_marks,
-    "obtained": round(obtained_marks, 2), # Changed from obtained_marks
-    "percentage": round(pct, 2),
-    "attained": pct >= (ATTAINMENT_THRESHOLD * 100) # Changed from status
-})
+        breakdown.append({
+            "clo_number": clo.clo_number,
+            "description": clo.description,
+            "max_marks": max_marks,
+            "obtained_marks": round(obtained_marks, 2),
+            "percentage": round(pct, 2),
+            "attained": pct >= (ATTAINMENT_THRESHOLD * 100)
+        })
 
-# Final return at the end of the function
     return {
-    "student_name": student.name,
-    "student_id": student.id,
-    "total_percentage": round((total_obtained / total_course_marks * 100) if total_course_marks > 0 else 0, 2),
-    "breakdown": breakdown # Changed from "clos" to "breakdown"
-}
+        "student_name": student.name,
+        "student_id": student.id,
+        "total_percentage": round((total_obtained / total_course_marks * 100) if total_course_marks > 0 else 0, 2),
+        "clos": breakdown
+    }
 
 # ── 4. Course Summary ─────────────────────────
 def get_course_summary(course_id: int, db: Session) -> dict:

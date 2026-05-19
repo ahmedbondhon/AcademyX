@@ -53,16 +53,23 @@ def predict_course_risk(course_id: int, db: Session):
         # Build the exact dictionary the UI and Alerts expect
         results.append({
             "student_id": int(row["student_id"]),
-            "name": row.get("student_name", f"Student {int(row['student_id'])}"),
-            "risk_score": risk_score,
-            "at_risk_cos": row.get("at_risk_cos", []), # Alert Service needs this!
-            "status": "High Risk" if risk_score > 70 else ("Moderate Risk" if risk_score > 40 else "Low Risk")
+            "student_name": row.get("student_name", f"Student {int(row['student_id'])}"),
+            "risk_pct": risk_score,
+            "risk_level": "high" if risk_score > 70 else ("medium" if risk_score > 40 else "low"),
+            "at_risk_cos": row.get("at_risk_cos", [])
         })
 
     # Return under the key "students" for FacultyDashboard.jsx
+    high_risk_count = sum(1 for s in results if s["risk_pct"] > 70)
+    medium_risk_count = sum(1 for s in results if 40 < s["risk_pct"] <= 70)
+    low_risk_count = sum(1 for s in results if s["risk_pct"] <= 40)
+    
     return {
         "course_id": course_id,
-        "students": results
+        "students": results,
+        "high_risk": high_risk_count,
+        "medium_risk": medium_risk_count,
+        "low_risk": low_risk_count
     }
 
 def predict_single_student(student_id: int, course_id: int, db: Session):
