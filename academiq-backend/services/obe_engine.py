@@ -55,11 +55,13 @@ def compute_clo_attainment(course_id: int, db: Session) -> list:
 
         results.append({
             "clo_id": clo.id,
-            "clo_number": clo.clo_number,
+            "co": clo.clo_number,  # Frontend expects "co" field for display
+            "clo_number": clo.clo_number,  # Keep for backward compatibility (PDF)
             "description": clo.description,
             "bloom_level": clo.bloom_level,
             "total_students": total_students,
-            "passed_students": passed_students,
+            "passing_students": passed_students,  # Frontend expects "passing_students"
+            "passed_students": passed_students,  # Keep for backward compatibility
             "total_marks": total_max_marks,
             "attainment_pct": round(attainment_pct, 2),
             "threshold_met": (passed_students / total_students) >= CLASS_PASS_THRESHOLD
@@ -162,6 +164,14 @@ def get_course_summary(course_id: int, db: Session) -> dict:
     met_clos = sum(1 for r in clo_results if r["threshold_met"])
     avg_attainment = round(sum(r["attainment_pct"] for r in clo_results) / total_clos if total_clos > 0 else 0.0, 2)
 
+    # Determine course health based on attainment
+    if avg_attainment >= 70:
+        health = "Good"
+    elif avg_attainment >= 50:
+        health = "Warning"
+    else:
+        health = "Critical"
+
     assessments = db.query(Assessment).filter(Assessment.course_id == course_id).all()
     
     # NEW: Prepare data for the Frontend Table
@@ -186,8 +196,12 @@ def get_course_summary(course_id: int, db: Session) -> dict:
         "course_id": course.id,
         "course_code": course.code,
         "course_name": course.name,
+        "semester": course.semester,
         "student_count": len(students_data),
+        "total_cos": total_clos,
+        "cos_met": met_clos,
         "avg_attainment": avg_attainment,
-        "assessments": assessment_list, # NEEDED FOR COLUMNS
-        "students": students_data       # NEEDED FOR ROWS
+        "health": health,
+        "assessments": assessment_list,
+        "students": students_data
     }

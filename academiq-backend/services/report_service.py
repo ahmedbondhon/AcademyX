@@ -56,8 +56,8 @@ def generate_obe_report(course_id: int, db: Session) -> bytes:
         else:
             risk_data = risk_response if isinstance(risk_response, list) else []
             
-        high_risk = sum(1 for s in risk_data if s.get("risk_score", 0) > 70)
-        moderate_risk = sum(1 for s in risk_data if 40 < s.get("risk_score", 0) <= 70)
+        high_risk = sum(1 for s in risk_data if s.get("risk_pct", 0) > 70)
+        moderate_risk = sum(1 for s in risk_data if 40 < s.get("risk_pct", 0) <= 70)
         total_risk_students = len(risk_data)
         ai_status = "Success"
     except Exception as e:
