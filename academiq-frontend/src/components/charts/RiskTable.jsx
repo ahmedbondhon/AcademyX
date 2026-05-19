@@ -1,7 +1,9 @@
+import { AlertCircle, CheckCircle2, Circle } from 'lucide-react'
+
 const riskConfig = {
-  high:   { color: 'text-red-600',    bg: 'bg-red-50',    badge: 'bg-red-100 text-red-700',    icon: '🔴' },
-  medium: { color: 'text-amber-600',  bg: 'bg-amber-50',  badge: 'bg-amber-100 text-amber-700', icon: '🟡' },
-  low:    { color: 'text-green-600',  bg: 'bg-green-50',  badge: 'bg-green-100 text-green-700', icon: '🟢' },
+  high:   { color: 'text-red-600',    bg: 'bg-red-50',    badge: 'bg-red-100 text-red-700',    Icon: AlertCircle },
+  medium: { color: 'text-amber-600',  bg: 'bg-amber-50',  badge: 'bg-amber-100 text-amber-700', Icon: Circle },
+  low:    { color: 'text-green-600',  bg: 'bg-green-50',  badge: 'bg-green-100 text-green-700', Icon: CheckCircle2 },
 }
 
 export default function RiskTable({ data = [] }) {
@@ -26,11 +28,13 @@ export default function RiskTable({ data = [] }) {
           <tbody>
             {data.map((s, i) => {
               const cfg = riskConfig[s.risk_level] || riskConfig.low
+              const IconComponent = cfg.Icon
               return (
                 <tr key={i}
                     className={`border-t border-slate-50 hover:${cfg.bg} transition-colors`}>
-                  <td className="px-4 py-3 font-medium text-slate-700">
-                    {cfg.icon} {s.student_name}
+                  <td className="px-4 py-3 font-medium text-slate-700 flex items-center gap-2">
+                    <IconComponent size={16} className={cfg.color} />
+                    {s.student_name}
                   </td>
                   <td className="px-4 py-3">
                     <span className={`px-2 py-0.5 rounded-full text-xs

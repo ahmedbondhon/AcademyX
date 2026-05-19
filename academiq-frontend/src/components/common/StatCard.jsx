@@ -1,4 +1,4 @@
-export default function StatCard({ label, value, sub, color = 'blue', icon }) {
+export default function StatCard({ label, value, sub, color = 'blue', Icon }) {
   const colors = {
     blue:   'bg-blue-50 text-blue-700 border-blue-100',
     green:  'bg-green-50 text-green-700 border-green-100',
@@ -16,7 +16,7 @@ export default function StatCard({ label, value, sub, color = 'blue', icon }) {
           <p className="text-3xl font-bold mt-1">{value}</p>
           {sub && <p className="text-xs mt-1 opacity-60">{sub}</p>}
         </div>
-        {icon && <span className="text-2xl">{icon}</span>}
+        {Icon && <Icon size={32} />}
       </div>
     </div>
   )

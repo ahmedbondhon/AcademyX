@@ -1,26 +1,38 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import useAuthStore from '../../store/authStore'
+import {
+  BarChart3,
+  TrendingUp,
+  AlertTriangle,
+  Target,
+  AlertCircle,
+  Upload,
+  Building2,
+  GraduationCap,
+  File,
+  LogOut,
+} from 'lucide-react'
 
 const navItems = {
   student: [
-    { path: '/dashboard',          label: 'Dashboard',      icon: '📊' },
-    { path: '/my-progress',        label: 'My CO Progress', icon: '📈' },
-    { path: '/my-risk',            label: 'My Risk Score',  icon: '⚠️'  },
+    { path: '/dashboard',          label: 'Dashboard',      Icon: BarChart3 },
+    { path: '/my-progress',        label: 'My CO Progress', Icon: TrendingUp },
+    { path: '/my-risk',            label: 'My Risk Score',  Icon: AlertTriangle  },
   ],
   faculty: [
-    { path: '/dashboard',          label: 'Dashboard',      icon: '📊' },
-    { path: '/attainment',         label: 'CO Attainment',  icon: '🎯' },
-    { path: '/at-risk',            label: 'At-Risk Students',icon: '🔴' },
-    { path: '/upload',             label: 'Upload Marks',   icon: '📤' },
+    { path: '/dashboard',          label: 'Dashboard',      Icon: BarChart3 },
+    { path: '/attainment',         label: 'CO Attainment',  Icon: Target },
+    { path: '/at-risk',            label: 'At-Risk Students', Icon: AlertCircle },
+    { path: '/upload',             label: 'Upload Marks',   Icon: Upload },
   ],
   dean: [
-    { path: '/dashboard',          label: 'Dashboard',      icon: '📊' },
-    { path: '/all-courses',        label: 'All Courses',    icon: '🏫' },
-    { path: '/po-attainment',      label: 'PO Attainment',  icon: '🎓' },
-    { path: '/reports',            label: 'Generate Report',icon: '📄' },
+    { path: '/dashboard',          label: 'Dashboard',      Icon: BarChart3 },
+    { path: '/all-courses',        label: 'All Courses',    Icon: Building2 },
+    { path: '/po-attainment',      label: 'PO Attainment',  Icon: GraduationCap },
+    { path: '/reports',            label: 'Generate Report', Icon: File },
   ],
   admin: [
-    { path: '/dashboard',          label: 'Dashboard',      icon: '📊' },
+    { path: '/dashboard',          label: 'Dashboard',      Icon: BarChart3 },
   ],
 }
 
@@ -66,6 +78,7 @@ export default function Sidebar() {
       <nav className="flex-1 p-4 space-y-1">
         {items.map((item) => {
           const active = location.pathname === item.path
+          const IconComponent = item.Icon
           return (
             <Link
               key={item.path}
@@ -77,7 +90,7 @@ export default function Sidebar() {
                             : 'text-brand-100 hover:bg-brand-700'
                           }`}
             >
-              <span className="text-base">{item.icon}</span>
+              <IconComponent size={18} />
               {item.label}
             </Link>
           )
@@ -91,7 +104,7 @@ export default function Sidebar() {
           className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg
                      text-sm text-brand-200 hover:bg-brand-700 transition-all"
         >
-          <span>🚪</span> Logout
+          <LogOut size={18} /> Logout
         </button>
       </div>
     </aside>

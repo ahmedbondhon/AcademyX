@@ -3,6 +3,7 @@ import { obeApi, reportApi } from '../../api/obeApi'
 import MainLayout from '../../components/layout/MainLayout'
 import StatCard from '../../components/common/StatCard'
 import toast from 'react-hot-toast'
+import { Building2, Users, TrendingUp, AlertTriangle, File } from 'lucide-react'
 
 export default function DeanDashboard() {
   const [courses, setCourses] = useState([])
@@ -56,10 +57,10 @@ export default function DeanDashboard() {
 
       {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <StatCard label="Total Courses"   value={courses.length}    icon="🏫" color="blue"   />
-        <StatCard label="Total Students"  value={totalStudents}     icon="👥" color="purple" />
-        <StatCard label="Avg Attainment"  value={`${avgAttainment}%`} icon="📊" color="green"  />
-        <StatCard label="Critical Courses" value={critical}         icon="⚠️"  color="red"    />
+        <StatCard label="Total Courses"   value={courses.length}    Icon={Building2} color="blue"   />
+        <StatCard label="Total Students"  value={totalStudents}     Icon={Users} color="purple" />
+        <StatCard label="Avg Attainment"  value={`${avgAttainment}%`} Icon={TrendingUp} color="green"  />
+        <StatCard label="Critical Courses" value={critical}         Icon={AlertTriangle}  color="red"    />
       </div>
 
       {/* Courses table */}
@@ -118,9 +119,10 @@ export default function DeanDashboard() {
                         handleDownloadReport(c.course_id, c.course_code)
                       }
                       className="bg-brand-800 text-white px-3 py-1.5 rounded-lg
-                                 text-xs font-medium hover:bg-brand-700 transition"
+                                 text-xs font-medium hover:bg-brand-700 transition
+                                 inline-flex items-center gap-1"
                     >
-                      📄 PDF
+                      <File size={14} /> PDF
                     </button>
                   </td>
                 </tr>

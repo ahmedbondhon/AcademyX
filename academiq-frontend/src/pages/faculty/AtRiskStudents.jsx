@@ -3,6 +3,7 @@ import { obeApi, alertApi } from '../../api/obeApi'
 import MainLayout from '../../components/layout/MainLayout'
 import RiskTable from '../../components/charts/RiskTable'
 import toast from 'react-hot-toast'
+import { Mail } from 'lucide-react'
 
 export default function AtRiskStudents() {
   const [data,    setData]    = useState({ students: [], high_risk: 0, medium_risk: 0, low_risk: 0 })
@@ -42,9 +43,11 @@ export default function AtRiskStudents() {
           onClick={handleSendAlerts}
           disabled={sending}
           className="bg-blue-800 text-white px-4 py-2 rounded-xl text-sm
-                     font-medium hover:bg-blue-700 disabled:opacity-50 transition-all"
+                     font-medium hover:bg-blue-700 disabled:opacity-50 transition-all
+                     flex items-center gap-2"
         >
-          {sending ? 'Sending...' : '📧 Send Alerts'}
+          <Mail size={16} />
+          {sending ? 'Sending...' : 'Send Alerts'}
         </button>
       </div>
 

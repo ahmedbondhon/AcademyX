@@ -5,6 +5,7 @@ import COAttainmentBar from '../../components/charts/COAttainmentBar'
 import RiskTable from '../../components/charts/RiskTable'
 import StatCard from '../../components/common/StatCard'
 import toast from 'react-hot-toast'
+import { Users, Target, TrendingUp, Heart } from 'lucide-react'
 
 export default function FacultyDashboard() {
   const [summary,    setSummary]    = useState(null)
@@ -65,25 +66,25 @@ export default function FacultyDashboard() {
         <StatCard
           label="Students"
           value={summary?.student_count}
-          icon="👥"
+          Icon={Users}
           color="blue"
         />
         <StatCard
           label="COs Met"
           value={`${summary?.cos_met} / ${summary?.total_cos}`}
-          icon="🎯"
+          Icon={Target}
           color="green"
         />
         <StatCard
           label="Avg Attainment"
           value={`${summary?.avg_attainment}%`}
-          icon="📊"
+          Icon={TrendingUp}
           color="purple"
         />
         <StatCard
           label="Course Health"
           value={summary?.health}
-          icon="❤️"
+          Icon={Heart}
           color={healthColor}
         />
       </div>

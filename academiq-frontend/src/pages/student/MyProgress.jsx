@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { obeApi } from '../../api/obeApi'
 import MainLayout from '../../components/layout/MainLayout'
 import toast from 'react-hot-toast'
+import { Check, X } from 'lucide-react'
 
 export default function MyProgress() {
   const [breakdown, setBreakdown] = useState([])
@@ -45,8 +46,9 @@ export default function MyProgress() {
                   <span className={`text-xs px-2 py-0.5 rounded-full font-medium
                     ${co.attained
                       ? 'bg-green-100 text-green-700'
-                      : 'bg-red-100 text-red-700'}`}>
-                    {co.attained ? '✓ Attained' : '✗ Not Attained'}
+                      : 'bg-red-100 text-red-700'} inline-flex items-center gap-1`}>
+                    {co.attained ? <Check size={14} /> : <X size={14} />}
+                    {co.attained ? 'Attained' : 'Not Attained'}
                   </span>
                 </div>
               </div>

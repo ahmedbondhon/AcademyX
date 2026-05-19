@@ -3,6 +3,7 @@ import { obeApi } from '../../api/obeApi'
 import MainLayout from '../../components/layout/MainLayout'
 import useAuthStore from '../../store/authStore'
 import toast from 'react-hot-toast'
+import { Check, X, AlertTriangle } from 'lucide-react'
 
 const riskColors = {
   high:   { bar: '#ef4444', bg: 'bg-red-50',   text: 'text-red-600',   badge: 'bg-red-100 text-red-700'    },
@@ -43,7 +44,7 @@ export default function StudentDashboard() {
     <MainLayout>
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-slate-800">
-          Welcome, {user?.name} 👋
+          Welcome, {user?.name}
         </h1>
         <p className="text-slate-400 text-sm mt-1">
           Your learning outcome progress — Spring 2026
@@ -55,15 +56,18 @@ export default function StudentDashboard() {
         <div className={`${rc.bg} rounded-2xl p-5 mb-6 border
                          border-opacity-20 flex items-center justify-between`}>
           <div>
-            <p className={`font-semibold ${rc.text}`}>
-              Your AI Risk Assessment
-            </p>
+            <div className="flex items-center gap-2">
+              <AlertTriangle size={20} className={rc.text} />
+              <p className={`font-semibold ${rc.text}`}>
+                Your AI Risk Assessment
+              </p>
+            </div>
             <p className="text-slate-500 text-sm mt-0.5">
               Based on your Week 1–9 performance
             </p>
             {risk.at_risk_cos?.length > 0 && (
               <p className="text-sm text-red-500 mt-1">
-                ⚠️ Needs attention: {risk.at_risk_cos.join(', ')}
+                Needs attention: {risk.at_risk_cos.join(', ')}
               </p>
             )}
           </div>
@@ -96,19 +100,19 @@ export default function StudentDashboard() {
                     {co.description}
                   </span>
                 </div>
-                <div className="text-right">
+                <div className="text-right flex items-center gap-2">
                   <span className="font-bold text-sm"
                         style={{
                           color: co.percentage >= 60 ? '#10b981' : '#ef4444'
                         }}>
                     {co.percentage}%
                   </span>
-                  <span className={`ml-2 text-xs px-1.5 py-0.5 rounded-full
+                  <span className={`text-xs px-1.5 py-0.5 rounded-full
                     ${co.attained
                       ? 'bg-green-100 text-green-700'
                       : 'bg-red-100 text-red-700'
-                    }`}>
-                    {co.attained ? '✓' : '✗'}
+                    } inline-flex items-center gap-1`}>
+                    {co.attained ? <Check size={14} /> : <X size={14} />}
                   </span>
                 </div>
               </div>
