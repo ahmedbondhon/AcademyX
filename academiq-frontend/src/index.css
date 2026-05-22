@@ -7,11 +7,11 @@
 
 body {
   margin: 0;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-  background: #f8fafc;
-  color: #1e293b;
+  font-family: 'Sora', -apple-system, BlinkMacSystemFont, sans-serif;
+  background: #0A0A0C;
+  color: #ffffff;
 }
 
 ::-webkit-scrollbar { width: 6px; }
-::-webkit-scrollbar-track { background: #f1f5f9; }
-::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+::-webkit-scrollbar-track { background: #1a1a1e; }
+::-webkit-scrollbar-thumb { background: #8B5CF6; border-radius: 3px; }
